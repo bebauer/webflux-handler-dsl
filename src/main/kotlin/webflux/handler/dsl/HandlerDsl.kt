@@ -20,15 +20,6 @@ open class HandlerDsl(
     var response: Response =
         { ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).body(fromObject("Incomplete DSL")) }
 
-//    fun extractPathVariables(
-//        vararg names: String,
-//        init: HandlerDsl.(List<String>) -> Unit
-//    ) {
-//        response = createResponse {
-//            init(names.map { request.pathVariable(it) })
-//        }
-//    }
-
     fun respond(f: Response) {
         response = f
     }
@@ -38,6 +29,26 @@ open class HandlerDsl(
             init(request)
         }.invoke()
     }
+
+    fun <T, U> QueryParameter<T, U>.optional(defaultValue: T? = null): QueryParameter<T?, U> =
+        QueryParameter(this.name, this.converter, true, defaultValue, this.repeated)
+
+    fun <T> QueryParameter<T, T>.repeated(): QueryParameter<List<T>, T> =
+        QueryParameter(this.name, this.converter, this.optional, repeated = true)
+
+    fun String.stringParam() = this.queryParam { it }
+
+    fun String.intParam() = this.queryParam(String::toInt)
+
+    fun <T> String.csvParam(converter: (String) -> T): QueryParameter<List<T>, List<T>> = this.queryParam { value ->
+        value.split(",").map(converter)
+    }
+
+    fun String.csvParam() = this.csvParam { it }
+
+    fun String.stringVar() = this.pathVariable { it }
+
+    fun String.intVar() = this.pathVariable(String::toInt)
 
     override fun invoke(): Mono<out ServerResponse> {
         init()

@@ -16,5 +16,6 @@ open class CodeGen : DefaultTask() {
     @TaskAction
     fun generate() {
         generateParameterDsl(project.codeGenOutputDir())
+        generatePathVariableDsl(project.codeGenOutputDir())
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.router
 
-class QueryParametersTest {
+class QueryParametersTests {
 
     private val client: WebTestClient by lazy {
         val router = router {
