@@ -6,7 +6,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
 
 internal fun generateParameterDsl(outputDir: File) {
-    val fileBuilder = FileSpec.builder("webflux.handler.dsl", "QueryParameters")
+    val fileBuilder = FileSpec.builder("webflux.handler.dsl", "QueryParametersGenerated")
 
     val queryParam = ClassName("webflux.handler.dsl", "QueryParameter")
     val handlerDsl = ClassName("webflux.handler.dsl", "HandlerDsl")
