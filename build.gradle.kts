@@ -17,13 +17,15 @@ val springVersion = "5.1.2.RELEASE"
 val junitVersion = "5.3.2"
 val assertJVersion = "3.11.1"
 val jacksonVersion = "2.9.7"
+val jUnitPlatformConsoleVersion = "1.2.0"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
     implementation("org.springframework:spring-webflux:$springVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testRuntime("org.junit.platform:junit-platform-console:$jUnitPlatformConsoleVersion")
     testImplementation("org.springframework:spring-test:$springVersion")
     testImplementation("org.springframework:spring-context:$springVersion")
     testImplementation("org.assertj:assertj-core:$assertJVersion")
@@ -34,10 +36,16 @@ sourceSets["main"].java {
     srcDir(codeGenOutputDir())
 }
 
-tasks.withType<KotlinCompile> {
-    dependsOn("codegen")
-    kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
-}
+tasks {
+    "test"(Test::class) {
+        useJUnitPlatform()
+    }
 
-task<CodeGen>("codegen")
+    create("codegen", CodeGen::class)
+
+    withType<KotlinCompile> {
+        dependsOn("codegen")
+        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
+    }
+}
