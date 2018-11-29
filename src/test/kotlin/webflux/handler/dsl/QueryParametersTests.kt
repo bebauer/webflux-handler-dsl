@@ -24,7 +24,7 @@ class QueryParametersTests {
                         listOf(9, 8, 7)
                     )
                 ) { v1, v2, v3, v4, v5, v6, v7, v8 ->
-                    respond {
+                    complete {
                         ok().body(fromObject("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8"))
                     }
                 }
@@ -44,7 +44,8 @@ class QueryParametersTests {
             .exchange()
             .expectStatus().isOk
             .expectBody(String::class.java)
-            .returnResult().apply { assertThat(responseBody).isEqualTo("a - b - 3 - 4 - c - [1, 2] - [3, 4] - [5, 6]") }
+            .returnResult()
+            .apply { assertThat(responseBody).isEqualTo("a - Some(b) - 3 - Some(4) - Some(c) - [1, 2] - Some([3, 4]) - Some([5, 6])") }
     }
 
     @Test
@@ -55,7 +56,7 @@ class QueryParametersTests {
             .expectStatus().isOk
             .expectBody(String::class.java)
             .returnResult()
-            .apply { assertThat(responseBody).isEqualTo("a - null - 3 - null - default - [1, 2] - null - [9, 8, 7]") }
+            .apply { assertThat(responseBody).isEqualTo("a - None - 3 - None - Some(default) - [1, 2] - None - Some([9, 8, 7])") }
     }
 
     @Test
@@ -71,7 +72,7 @@ class QueryParametersTests {
         val router = router {
             GET("/blah", handler {
                 parameter("test".csvParam()) { test ->
-                    respond {
+                    complete {
                         ok().contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
                     }
                 }
@@ -95,7 +96,7 @@ class QueryParametersTests {
         val router = router {
             GET("/blah", handler {
                 parameter("test".csvParam(String::toInt)) { test ->
-                    respond {
+                    complete {
                         ok().contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
                     }
                 }
