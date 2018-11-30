@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "webflux-handler-dsl"
-version = "1.0-SNAPSHOT"
+version = "0.2"
 
 repositories {
     jcenter()
@@ -42,22 +42,21 @@ sourceSets["main"].java {
     srcDir(codeGenOutputDir())
 }
 
-tasks {
-    "test"(Test::class) {
-        useJUnitPlatform()
-    }
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
 
-    create("codegen", CodeGen::class)
+val codeGen by tasks.registering(CodeGen::class)
 
-    withType<KotlinCompile> {
-        dependsOn("codegen")
-        kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
-    }
+tasks.withType<KotlinCompile> {
+    dependsOn(codeGen)
+
+    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
-    dependsOn(JavaPlugin.CLASSES_TASK_NAME)
+    dependsOn(JavaPlugin.CLASSES_TASK_NAME, codeGen)
     classifier = "sources"
     from(sourceSets["main"].allSource)
 }
@@ -81,6 +80,7 @@ bintray {
         repo = "maven"
         name = "webflux-handler-dsl"
         setLicenses("Apache-2.0")
+        vcsUrl = "https://github.com/bebauer/webflux-handler-dsl"
         with(version) {
             name = project.version.toString()
             desc = "${project.description} ${project.version}"

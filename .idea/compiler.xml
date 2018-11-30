@@ -3,6 +3,7 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
       <module name="webflux-handler-dsl.webflux-handler-dsl.gen" target="11" />
+      <module name="webflux-handler-dsl.webflux-handler-dsl.generated" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>
