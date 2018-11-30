@@ -10,6 +10,9 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 
+/**
+ * Creates a handler.
+ */
 fun handler(init: HandlerDsl.() -> Unit): (ServerRequest) -> Mono<out ServerResponse> = {
     HandlerDsl(it, init).invoke()
 }

@@ -4,6 +4,8 @@ import webflux.handler.dsl.codegen.codeGenOutputDir
 
 plugins {
     kotlin("jvm") version "1.3.10"
+    id("com.jfrog.bintray") version "1.8.4"
+    `maven-publish`
 }
 
 group = "webflux-handler-dsl"
@@ -52,4 +54,40 @@ tasks {
         kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
     }
+}
+
+val sourcesJar by tasks.registering(Jar::class) {
+    dependsOn(JavaPlugin.CLASSES_TASK_NAME)
+    classifier = "sources"
+    from(sourceSets["main"].allSource)
+}
+
+val publicationName = "maven"
+
+publishing {
+    publications {
+        register(publicationName, MavenPublication::class) {
+            from(components["java"])
+            artifact(sourcesJar.get())
+        }
+    }
+}
+
+bintray {
+    user = (project.properties["bintray.user"] ?: System.getenv("BINTRAY_USER"))?.toString()
+    key = (project.properties["bintray.key"] ?: System.getenv("BINTRAY_API_KEY"))?.toString()
+    setPublications(publicationName)
+    with(pkg) {
+        repo = "maven"
+        name = "webflux-handler-dsl"
+        setLicenses("Apache-2.0")
+        with(version) {
+            name = project.version.toString()
+            desc = "${project.description} ${project.version}"
+            vcsTag = project.version.toString()
+        }
+    }
+    publish = (project.properties["bintray.publish"] ?: "true").toString().toBoolean()
+    override = (project.properties["bintray.override"] ?: "false").toString().toBoolean()
+    dryRun = (project.properties["bintray.dryrun"] ?: "false").toString().toBoolean()
 }
