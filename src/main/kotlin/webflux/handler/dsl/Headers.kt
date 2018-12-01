@@ -8,43 +8,101 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.server.ResponseStatusException
 
+/**
+ * Represents a header name.
+ *
+ * @param T type of the header value
+ * @param name the name of the header
+ * @param converter the value converter function
+ */
 data class HeaderName<T>(val name: String, val converter: (List<String>) -> T)
 
+/**
+ * Creates a [HeaderName] from a [String].
+ *
+ * @param T the type of the header value
+ * @param converter the value converter function
+ */
 fun <T> String.header(converter: (List<String>) -> T) = HeaderName(this, converter)
 
+/**
+ * Creates a [HeaderName] that returns the value as a comma separated string.
+ */
 fun String.rawHeader() = this.header { it.joinToString() }
 
+/**
+ * Creates a [HeaderName] that returns the value as list of strings.
+ */
 fun String.stringHeader() = this.header { it }
 
+/**
+ * Creates a [HeaderName] that only extracts the first value.
+ */
 fun <T> HeaderName<out List<T>>.single() = HeaderName(this.name) { this.converter(it).first() }
 
-fun <T> HandlerDsl.headerValue(header: HeaderName<T>,
-                               init: HandlerDsl.(T) -> Unit) = nest { request ->
+/**
+ * Extracts a header value from the [org.springframework.web.reactive.function.server.ServerRequest].
+ * Fails if the header does not exist.
+ *
+ * Example:
+ * ```
+ * handler {
+ *  headerValue("test".stringHeader().single()) { test ->
+ *      complete(test)
+ *  }
+ * }
+ * ```
+ *
+ * @param header the header to extract
+ */
+fun <T> HandlerDsl.headerValue(
+    header: HeaderName<T>,
+    init: HandlerDsl.(T) -> Unit
+) = extractRequest { request ->
     val (name, converter) = header
 
     val values = request.headers().header(name)
 
     if (values.isEmpty()) {
-        throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing header $name.")
+        failWith(ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing header $name."))
+    } else {
+        init(converter(values))
     }
-
-    init(converter(values))
 }
 
-fun <T> HandlerDsl.optionalHeaderValue(header: HeaderName<T>,
-                                       init: HandlerDsl.(Option<T>) -> Unit) = nest { request ->
+/**
+ * Extracts an optional header value from the [org.springframework.web.reactive.function.server.ServerRequest].
+ *
+ * Example:
+ * ```
+ * handler {
+ *  optionalHeaderValue("test".stringHeader().single()) { test -> // Option<String>
+ *      test.map { complete(it) }.getOrElse { failWith("missing") }
+ *  }
+ * }
+ * ```
+ *
+ * @param header the header to extract
+ */
+fun <T> HandlerDsl.optionalHeaderValue(
+    header: HeaderName<T>,
+    init: HandlerDsl.(Option<T>) -> Unit
+) = extractRequest { request ->
     val (name, converter) = header
 
     val values = request.headers().header(name)
 
     val maybeValue = when {
         values.isEmpty() -> None
-        else             -> Some(values)
+        else -> Some(values)
     }
 
     init(maybeValue.map(converter))
 }
 
+/**
+ * Container for standard HTTP headers.
+ */
 object Headers {
     val Accept = HeaderName(HttpHeaders.ACCEPT) { it.map(MediaType::valueOf) }
     val ContentType = HeaderName(HttpHeaders.CONTENT_TYPE) { it.map(MediaType::valueOf) }

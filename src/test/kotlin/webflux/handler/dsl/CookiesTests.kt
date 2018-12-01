@@ -14,23 +14,23 @@ class CookiesTests {
             GET("/test", handler {
                 cookie("test") { (test) ->
                     complete {
-                        ok().body(BodyInserters.fromObject(test.value))
+                        ok().body(BodyInserters.fromObject(test))
                     }
                 }
             })
         }
 
         WebTestClient.bindToRouterFunction(router)
-                .configureClient()
-                .baseUrl("http://localhost")
-                .build()
-                .get()
-                .uri("/test")
-                .cookie("test", "xyz")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(String::class.java)
-                .returnResult().apply { Assertions.assertThat(responseBody).isEqualTo("xyz") }
+            .configureClient()
+            .baseUrl("http://localhost")
+            .build()
+            .get()
+            .uri("/test")
+            .cookie("test", "xyz")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(String::class.java)
+            .returnResult().apply { Assertions.assertThat(responseBody).isEqualTo("xyz") }
     }
 
     @Test
@@ -39,20 +39,20 @@ class CookiesTests {
             GET("/test", handler {
                 cookie("test") { (test) ->
                     complete {
-                        ok().body(BodyInserters.fromObject(test.value))
+                        ok().body(BodyInserters.fromObject(test))
                     }
                 }
             })
         }
 
         WebTestClient.bindToRouterFunction(router)
-                .configureClient()
-                .baseUrl("http://localhost")
-                .build()
-                .get()
-                .uri("/test")
-                .exchange()
-                .expectStatus().isBadRequest
+            .configureClient()
+            .baseUrl("http://localhost")
+            .build()
+            .get()
+            .uri("/test")
+            .exchange()
+            .expectStatus().isBadRequest
     }
 
     @Test
@@ -68,17 +68,17 @@ class CookiesTests {
         }
 
         WebTestClient.bindToRouterFunction(router)
-                .configureClient()
-                .baseUrl("http://localhost")
-                .build()
-                .get()
-                .uri("/test")
-                .cookie("test", "xyz")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(String::class.java)
-                .returnResult()
-                .apply { Assertions.assertThat(responseBody).isEqualTo("Some([test=xyz])") }
+            .configureClient()
+            .baseUrl("http://localhost")
+            .build()
+            .get()
+            .uri("/test")
+            .cookie("test", "xyz")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(String::class.java)
+            .returnResult()
+            .apply { Assertions.assertThat(responseBody).isEqualTo("Some([xyz])") }
     }
 
     @Test
@@ -94,14 +94,14 @@ class CookiesTests {
         }
 
         WebTestClient.bindToRouterFunction(router)
-                .configureClient()
-                .baseUrl("http://localhost")
-                .build()
-                .get()
-                .uri("/test")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(String::class.java)
-                .returnResult().apply { Assertions.assertThat(responseBody).isEqualTo("None") }
+            .configureClient()
+            .baseUrl("http://localhost")
+            .build()
+            .get()
+            .uri("/test")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(String::class.java)
+            .returnResult().apply { Assertions.assertThat(responseBody).isEqualTo("None") }
     }
 }

@@ -1,12 +1,20 @@
 package webflux.handler.dsl
 
+import arrow.core.None
+import arrow.core.Some
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.router
+import java.math.BigDecimal
+import java.math.BigInteger
 
+@ExperimentalUnsignedTypes
 class QueryParametersTests {
 
     private val client: WebTestClient by lazy {
@@ -113,5 +121,142 @@ class QueryParametersTests {
             .expectStatus().isOk
             .expectBody(List::class.java)
             .returnResult().apply { assertThat(responseBody).containsExactly(1, 2, 3) }
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `string query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::stringParam, testMode, "abc")
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `int query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::intParam, testMode, Int.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `short query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::shortParam, testMode, Short.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `long query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::longParam, testMode, Long.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `byte query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::byteParam, testMode, Byte.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `double query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::doubleParam, testMode, Double.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `float query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::floatParam, testMode, Float.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `BigDecimal query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(
+            String::bigDecimalParam,
+            testMode,
+            BigDecimal.valueOf(Double.MAX_VALUE).add(1.toBigDecimal())
+        )
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `BigInteger query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(
+            String::bigIntegerParam,
+            testMode,
+            BigInteger.valueOf(Long.MAX_VALUE).add(1.toBigInteger())
+        )
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `boolean query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::booleanParam, testMode, true)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `uInt query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::uIntParam, testMode, UInt.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `uLong query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::uLongParam, testMode, ULong.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `uByte query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::uByteParam, testMode, UByte.MAX_VALUE)
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestMode::class)
+    fun `uShort query parameter`(testMode: TestMode) {
+        testTypedQueryParameter(String::uShortParam, testMode, UShort.MAX_VALUE)
+    }
+
+    enum class TestMode {
+        DEFAULT,
+        REPEATED,
+        OPTIONAL_SET,
+        OPTIONAL_MISSING,
+        OPTIONAL_MISSING_DEFAULT,
+        OPTIONAL_REPEATED_SET,
+        OPTIONAL_REPEATED_MISSING,
+        OPTIONAL_REPEATED_MISSING_DEFAULT
+    }
+
+    private fun <T> testTypedQueryParameter(
+        parameter: String.() -> QueryParameter<T, T>,
+        testMode: TestMode,
+        value: T
+    ) {
+        val testConfig = when (testMode) {
+            TestMode.DEFAULT -> "test".parameter() to value
+            TestMode.REPEATED -> "test".parameter().repeated() to listOf(value)
+            TestMode.OPTIONAL_SET -> "test".parameter().optional() to Some(value)
+            TestMode.OPTIONAL_MISSING -> "test".parameter().optional() to None
+            TestMode.OPTIONAL_MISSING_DEFAULT -> "test".parameter().optional(value) to Some(value)
+            TestMode.OPTIONAL_REPEATED_SET -> "test".parameter().repeated().optional() to Some(listOf(value))
+            TestMode.OPTIONAL_REPEATED_MISSING -> "test".parameter().repeated().optional() to None
+            TestMode.OPTIONAL_REPEATED_MISSING_DEFAULT -> "test".parameter().repeated().optional(listOf(value)) to Some(
+                listOf(value)
+            )
+        }
+
+        runHandlerTest(
+            handler {
+                parameter(testConfig.first) { test ->
+                    complete(test.toString())
+                }
+            },
+            {
+                expectStatus().isOk
+                    .expectBody(String::class.java)
+                    .returnResult()
+                    .apply { Assertions.assertThat(responseBody).isEqualTo(testConfig.second.toString()) }
+            },
+            { GET("/test", it) },
+            { get().uri("/test" + if (testConfig.second is None) "" else "?test=${value.toString()}") })
     }
 }
