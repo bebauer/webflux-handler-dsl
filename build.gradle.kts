@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "webflux-handler-dsl"
-version = "0.2"
+version = "0.3"
 
 repositories {
     jcenter()
@@ -74,7 +74,7 @@ publishing {
 
 bintray {
     user = (project.properties["bintray.user"] ?: System.getenv("BINTRAY_USER"))?.toString()
-    key = (project.properties["bintray.key"] ?: System.getenv("BINTRAY_API_KEY"))?.toString()
+    key = (project.properties["bintray.key"] ?: System.getenv("BINTRAY_KEY"))?.toString()
     setPublications(publicationName)
     with(pkg) {
         repo = "maven"
