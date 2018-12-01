@@ -114,6 +114,21 @@ class PathVariablesTests {
             { get().uri("/test/123/a/b") })
     }
 
+    @Test
+    fun `failed to parse`() {
+        runHandlerTest(
+            handler {
+                pathVariables("test".intVar()) { test ->
+                    complete(test)
+                }
+            },
+            {
+                expectStatus().isBadRequest
+            },
+            { GET("/test/{test}", it) },
+            { get().uri("/test/abc") })
+    }
+
     private inline fun <reified T> testTypedVariable(
         crossinline variable: String.() -> PathVariable<T>,
         expectedResult: T

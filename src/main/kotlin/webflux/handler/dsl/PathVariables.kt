@@ -5,7 +5,6 @@ import arrow.core.Success
 import arrow.core.Try
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
-import kotlin.reflect.jvm.reflect
 
 /**
  * Represents a path variable.
@@ -124,11 +123,7 @@ fun <T> HandlerDsl.pathVariable(
 
     when (converted) {
         is Failure -> failWith(
-            ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Failed to convert path variable $name to type ${converter.reflect()?.returnType}.",
-                converted.exception
-            )
+            ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse path variable $name.", converted.exception)
         )
         is Success -> init(converted.value)
     }

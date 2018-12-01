@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.3.10"
     id("com.jfrog.bintray") version "1.8.4"
     `maven-publish`
+    `project-report`
 }
 
 group = "webflux-handler-dsl"
@@ -24,10 +25,8 @@ val arrowVersion = "0.8.1"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation(kotlin("reflect"))
     implementation("org.springframework:spring-webflux:$springVersion")
     implementation("io.arrow-kt:arrow-core:$arrowVersion")
-    implementation("io.arrow-kt:arrow-syntax:$arrowVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
@@ -35,7 +34,17 @@ dependencies {
     testImplementation("org.springframework:spring-test:$springVersion")
     testImplementation("org.springframework:spring-context:$springVersion")
     testImplementation("org.assertj:assertj-core:$assertJVersion")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    // undo 1.3 workaround with next jackson kotlin version
+    testImplementation(kotlin("reflect"))
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion") {
+        exclude(module = "kotlin-reflect")
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+
+    }
 }
 
 sourceSets["main"].java {
