@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import pl.allegro.tech.build.axion.release.domain.PredefinedVersionIncrementer
 import webflux.handler.dsl.codegen.CodeGen
 import webflux.handler.dsl.codegen.codeGenOutputDir
 
@@ -18,6 +19,7 @@ repositories {
 }
 
 scmVersion {
+    versionIncrementer = PredefinedVersionIncrementer.versionIncrementerFor("incrementMinor")
 }
 
 val springVersion = "5.1.2.RELEASE"
@@ -42,12 +44,6 @@ dependencies {
     testImplementation(kotlin("reflect"))
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion") {
         exclude(module = "kotlin-reflect")
-    }
-}
-
-configurations.all {
-    resolutionStrategy {
-
     }
 }
 
