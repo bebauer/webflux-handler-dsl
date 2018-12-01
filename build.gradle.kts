@@ -7,13 +7,17 @@ plugins {
     id("com.jfrog.bintray") version "1.8.4"
     `maven-publish`
     `project-report`
+    id("pl.allegro.tech.build.axion-release") version "1.10.0"
 }
 
 group = "webflux-handler-dsl"
-version = "0.3"
+version = scmVersion.version
 
 repositories {
     jcenter()
+}
+
+scmVersion {
 }
 
 val springVersion = "5.1.2.RELEASE"
