@@ -40,10 +40,10 @@ internal fun generatePathVariableDsl(outputDir: File) {
                 |  }
                 |}
                 |""".trimMargin(),
-                (1..i - 1).map { "variable$it" }.joinToString(),
-                (1..i - 1).map { "v$it" }.joinToString(),
+                (1 until i).joinToString { "variable$it" },
+                (1 until i).joinToString { "v$it" },
                 i,
-                (1..i).map { "v$it" }.joinToString()
+                (1..i).joinToString { "v$it" }
             )
 
         fileBuilder.addFunction(functionBuilder.build())
