@@ -46,7 +46,7 @@ implementation("de.bebauer:webflux-handler-dsl:0.5.0")
 
 #### Repository
 
-```markup
+```xml
 <repository>
   <id>bintray-bebauer</id>
   <url>https://dl.bintray.com/bebauer/maven</url>
@@ -55,7 +55,7 @@ implementation("de.bebauer:webflux-handler-dsl:0.5.0")
 
 #### Dependency
 
-```markup
+```xml
 <dependency>
   <groupId>de.bebauer</groupId>
   <artifactId>webflux-handler-dsl</artifactId>

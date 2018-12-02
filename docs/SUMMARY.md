@@ -1,3 +1,6 @@
+* [Getting Started](gettingStarted/README.md)
+  * [Gradle](gettingStarted/gradle.md)
+  * [Maven](gettingStarted/maven.md)
 * [Directives](directives/README.md)
   * [Completions](directives/completions/README.md)
     * [complete](directives/completions/complete.md)
