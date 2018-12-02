@@ -1,4 +1,4 @@
-package webflux.handler.dsl
+package de.bebauer.webflux.handler.dsl
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test

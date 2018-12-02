@@ -1,4 +1,4 @@
-package webflux.handler.dsl
+package de.bebauer.webflux.handler.dsl
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -11,7 +11,9 @@ class HandlerDslTests {
 
     @Test
     fun `fail without complete`() {
-        runHandlerTest(handler { }, { expectStatus().is5xxServerError })
+        runHandlerTest(
+            handler { },
+            { expectStatus().is5xxServerError })
     }
 
     @Test
@@ -44,6 +46,8 @@ class HandlerDslTests {
 
     @Test
     fun `explicit failure with error message`() {
-        runHandlerTest(handler { failWith("Failure") }, { expectStatus().is5xxServerError })
+        runHandlerTest(
+            handler { failWith("Failure") },
+            { expectStatus().is5xxServerError })
     }
 }

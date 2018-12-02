@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import pl.allegro.tech.build.axion.release.domain.PredefinedVersionIncrementer
-import webflux.handler.dsl.codegen.CodeGen
-import webflux.handler.dsl.codegen.codeGenOutputDir
+import de.bebauer.webflux.handler.dsl.codegen.CodeGen
+import de.bebauer.webflux.handler.dsl.codegen.codeGenOutputDir
 
 plugins {
     kotlin("jvm") version "1.3.10"
@@ -11,7 +11,7 @@ plugins {
     id("pl.allegro.tech.build.axion-release") version "1.10.0"
 }
 
-group = "webflux-handler-dsl"
+group = "de.bebauer"
 version = scmVersion.version
 
 repositories {

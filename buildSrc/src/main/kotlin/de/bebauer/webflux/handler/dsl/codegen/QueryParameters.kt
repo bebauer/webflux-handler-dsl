@@ -1,25 +1,28 @@
-package webflux.handler.dsl.codegen
+package de.bebauer.webflux.handler.dsl.codegen
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+
 import java.io.File
 
-internal fun generatePathVariableDsl(outputDir: File) {
-    val fileBuilder = FileSpec.builder("webflux.handler.dsl", "PathVariablesGenerated")
+internal fun generateParameterDsl(outputDir: File) {
+    val fileBuilder = FileSpec.builder("de.bebauer.webflux.handler.dsl", "QueryParametersGenerated")
 
-    val pathVariable = ClassName("webflux.handler.dsl", "PathVariable")
-    val handlerDsl = ClassName("webflux.handler.dsl", "HandlerDsl")
+    val queryParam = ClassName("de.bebauer.webflux.handler.dsl", "QueryParameter")
+    val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
 
     (2..10).forEach { i ->
-        val functionBuilder = FunSpec.builder("pathVariables")
+        val functionBuilder = FunSpec.builder("parameters")
             .receiver(handlerDsl)
 
         (1..i).forEach {
             val typeT = TypeVariableName("T$it")
+            val typeU = TypeVariableName("U$it")
 
             functionBuilder.addTypeVariable(typeT)
+            functionBuilder.addTypeVariable(typeU)
 
-            functionBuilder.addParameter("variable$it", pathVariable.parameterizedBy(typeT))
+            functionBuilder.addParameter("parameter$it", queryParam.parameterizedBy(typeT, typeU))
         }
 
         functionBuilder
@@ -34,13 +37,13 @@ internal fun generatePathVariableDsl(outputDir: File) {
             .returns(Unit::class.asClassName())
             .addCode(
                 """
-                |this.pathVariables(%1L) { %2L ->
-                |  this.pathVariable(variable%3L) { v%3L ->
+                |this.parameters(%1L) { %2L ->
+                |  this.parameter(parameter%3L) { v%3L ->
                 |    init(%4L)
                 |  }
                 |}
                 |""".trimMargin(),
-                (1 until i).joinToString { "variable$it" },
+                (1 until i).joinToString { "parameter$it" },
                 (1 until i).joinToString { "v$it" },
                 i,
                 (1..i).joinToString { "v$it" }

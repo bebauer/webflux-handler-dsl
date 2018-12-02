@@ -1,4 +1,4 @@
-package webflux.handler.dsl
+package de.bebauer.webflux.handler.dsl
 
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.server.*

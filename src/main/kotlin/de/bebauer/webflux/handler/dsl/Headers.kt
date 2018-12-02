@@ -1,4 +1,4 @@
-package webflux.handler.dsl
+package de.bebauer.webflux.handler.dsl
 
 import arrow.core.None
 import arrow.core.Option
@@ -38,7 +38,8 @@ fun String.stringHeader() = this.header { it }
 /**
  * Creates a [HeaderName] that only extracts the first value.
  */
-fun <T> HeaderName<out List<T>>.single() = HeaderName(this.name) { this.converter(it).first() }
+fun <T> HeaderName<out List<T>>.single() =
+    HeaderName(this.name) { this.converter(it).first() }
 
 /**
  * Extracts a header value from the [org.springframework.web.reactive.function.server.ServerRequest].

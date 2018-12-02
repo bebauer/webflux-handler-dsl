@@ -33,11 +33,11 @@ repositories {
 ```
 Groovy:
 
-implementation 'webflux-handler-dsl:webflux-handler-dsl:0.4.0'
+implementation 'de.bebauer:webflux-handler-dsl:0.5.0'
 
 Kotlin:
 
-implementation("webflux-handler-dsl:webflux-handler-dsl:0.4.0")
+implementation("de.bebauer:webflux-handler-dsl:0.5.0")
 ```
 
 ## Maven
@@ -55,9 +55,9 @@ implementation("webflux-handler-dsl:webflux-handler-dsl:0.4.0")
 
 ```xml
 <dependency>
-  <groupId>webflux-handler-dsl</groupId>
+  <groupId>de.bebauer</groupId>
   <artifactId>webflux-handler-dsl</artifactId>
-  <version>0.4.0</version>
+  <version>0.5.0</version>
 </dependency>
 ```
 
@@ -81,7 +81,7 @@ class Config {
 ## Complex
 
 ```kotlin
-import webflux.handler.dsl.*
+import de.bebauer.webflux.handler.dsl.*
 
 router {
     GET("/{language}/entity/{id}", handler {

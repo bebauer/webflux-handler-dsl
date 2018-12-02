@@ -1,4 +1,4 @@
-package webflux.handler.dsl
+package de.bebauer.webflux.handler.dsl
 
 import arrow.core.*
 import org.springframework.http.HttpStatus
@@ -25,21 +25,22 @@ data class QueryParameter<T, U>(
  * @param T the type of the parameter
  * @param converter the converter function mapping a [String] to the parameter type
  */
-fun <T> String.queryParam(converter: (String) -> T): QueryParameter<T, T> = QueryParameter(
-    name = this,
-    converter = converter,
-    valueExtractor = {
-        when (it) {
-            is Some -> Right(converter(it.t[0]))
-            is None -> Left(
-                ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Missing required query parameter $this."
+fun <T> String.queryParam(converter: (String) -> T): QueryParameter<T, T> =
+    QueryParameter(
+        name = this,
+        converter = converter,
+        valueExtractor = {
+            when (it) {
+                is Some -> Right(converter(it.t[0]))
+                is None -> Left(
+                    ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Missing required query parameter $this."
+                    )
                 )
-            )
+            }
         }
-    }
-)
+    )
 
 /**
  * Makes a [QueryParameter] optional.

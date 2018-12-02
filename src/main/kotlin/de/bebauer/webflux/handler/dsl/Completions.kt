@@ -1,4 +1,4 @@
-package webflux.handler.dsl
+package de.bebauer.webflux.handler.dsl
 
 import org.reactivestreams.Publisher
 import org.springframework.http.HttpStatus

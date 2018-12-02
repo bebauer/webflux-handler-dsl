@@ -1,8 +1,7 @@
-package webflux.handler.dsl
+package de.bebauer.webflux.handler.dsl
 
 import arrow.core.None
 import arrow.core.Some
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -254,7 +253,7 @@ class QueryParametersTests {
                 expectStatus().isOk
                     .expectBody(String::class.java)
                     .returnResult()
-                    .apply { Assertions.assertThat(responseBody).isEqualTo(testConfig.second.toString()) }
+                    .apply { assertThat(responseBody).isEqualTo(testConfig.second.toString()) }
             },
             { GET("/test", it) },
             { get().uri("/test" + if (testConfig.second is None) "" else "?test=${value.toString()}") })

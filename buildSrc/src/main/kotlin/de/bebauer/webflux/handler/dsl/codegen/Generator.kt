@@ -1,4 +1,4 @@
-package webflux.handler.dsl.codegen
+package de.bebauer.webflux.handler.dsl.codegen
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
