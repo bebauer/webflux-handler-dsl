@@ -47,17 +47,35 @@ fun <T> String.queryParam(converter: (String) -> T): QueryParameter<T, T> =
  *
  * @param T the type of the parameter
  * @param U type of a single parameter
- * @param defaultValue the optional default value of the parameter
  */
-fun <T, U> QueryParameter<T, U>.optional(defaultValue: T? = null): QueryParameter<Option<T>, U> =
+fun <T, U> QueryParameter<T, U>.optional(): QueryParameter<Option<T>, U> =
     QueryParameter(
         this.name,
         this.converter,
         {
             val value = this.valueExtractor(it)
             when (value) {
-                is Either.Left -> Right(defaultValue.toOption())
+                is Either.Left -> Right(None)
                 is Either.Right -> value.map(::Some)
+            }
+        })
+
+/**
+ * Makes a [QueryParameter] optional.
+ *
+ * @param T the type of the parameter
+ * @param U type of a single parameter
+ * @param defaultValue the optional default value of the parameter
+ */
+fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> =
+    QueryParameter(
+        this.name,
+        this.converter,
+        {
+            val value = this.valueExtractor(it)
+            when (value) {
+                is Either.Left -> Right(defaultValue)
+                is Either.Right -> value
             }
         })
 

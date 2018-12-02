@@ -52,7 +52,7 @@ class QueryParametersTests {
             .expectStatus().isOk
             .expectBody(String::class.java)
             .returnResult()
-            .apply { assertThat(responseBody).isEqualTo("a - Some(b) - 3 - Some(4) - Some(c) - [1, 2] - Some([3, 4]) - Some([5, 6])") }
+            .apply { assertThat(responseBody).isEqualTo("a - Some(b) - 3 - Some(4) - c - [1, 2] - Some([3, 4]) - [5, 6]") }
     }
 
     @Test
@@ -63,7 +63,7 @@ class QueryParametersTests {
             .expectStatus().isOk
             .expectBody(String::class.java)
             .returnResult()
-            .apply { assertThat(responseBody).isEqualTo("a - None - 3 - None - Some(default) - [1, 2] - None - Some([9, 8, 7])") }
+            .apply { assertThat(responseBody).isEqualTo("a - None - 3 - None - default - [1, 2] - None - [9, 8, 7]") }
     }
 
     @Test
@@ -235,11 +235,11 @@ class QueryParametersTests {
             TestMode.REPEATED -> "test".parameter().repeated() to listOf(value)
             TestMode.OPTIONAL_SET -> "test".parameter().optional() to Some(value)
             TestMode.OPTIONAL_MISSING -> "test".parameter().optional() to None
-            TestMode.OPTIONAL_MISSING_DEFAULT -> "test".parameter().optional(value) to Some(value)
+            TestMode.OPTIONAL_MISSING_DEFAULT -> "test".parameter().optional(value) to value
             TestMode.OPTIONAL_REPEATED_SET -> "test".parameter().repeated().optional() to Some(listOf(value))
             TestMode.OPTIONAL_REPEATED_MISSING -> "test".parameter().repeated().optional() to None
-            TestMode.OPTIONAL_REPEATED_MISSING_DEFAULT -> "test".parameter().repeated().optional(listOf(value)) to Some(
-                listOf(value)
+            TestMode.OPTIONAL_REPEATED_MISSING_DEFAULT -> "test".parameter().repeated().optional(listOf(value)) to listOf(
+                value
             )
         }
 

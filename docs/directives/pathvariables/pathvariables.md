@@ -5,13 +5,18 @@
 ```kotlin
 fun <T1> HandlerDsl.pathVariables(variable1: PathVariable<T1>, init: HandlerDsl.(T1) -> Unit)
 
-fun <T1, T2> HandlerDsl.pathVariables(variable1: PathVariable<T1>, variable2: PathVariable<T2>, init: HandlerDsl.(T1, T2) -> Unit)
+fun <T1, T2> HandlerDsl.pathVariables(
+    variable1: PathVariable<T1>, 
+    variable2: PathVariable<T2>, 
+    init: HandlerDsl.(T1, T2) -> Unit)
 
-.
-.
-.
+...
 
-fun <T1, ..., T10> HandlerDsl.pathVariables(variable1: PathVariable<T1>, ..., variable10: PathVariable<T10>, init: HandlerDsl.(T1, ..., T10) -> Unit)
+fun <T1, ..., T10> HandlerDsl.pathVariables(
+    variable1: PathVariable<T1>, 
+    ..., 
+    variable10: PathVariable<T10>, 
+    init: HandlerDsl.(T1, ..., T10) -> Unit)
 ```
 
 ## Description

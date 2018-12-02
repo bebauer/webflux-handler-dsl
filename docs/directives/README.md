@@ -1,6 +1,6 @@
 # Directives
 
-Directives are the building blocks of our DSL.
+Directives are the building blocks of this DSL.
 
 ## A-Z
 

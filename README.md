@@ -63,47 +63,9 @@ implementation("de.bebauer:webflux-handler-dsl:0.5.0")
 </dependency>
 ```
 
-## Examples
+## Documentation
 
-### Hello World
-
-```kotlin
-import de.bebauer.webflux.handler.dsl.*
-
-@Configuration
-class Config {
-
-    @Bean
-    fun routes() = router {
-        GET("/", handler {
-            complete("Hello World.")
-        })
-    }
-}
-```
-
-### Complex
-
-```kotlin
-import de.bebauer.webflux.handler.dsl.*
-
-router {
-    GET("/{language}/entity/{id}", handler {
-        pathVariables("id".intVar(), "language".stringVar()) { id, language ->
-            queryParameters(
-                "from".intParam().optional(0), 
-                "size".intParam().optional(50)
-            ) { from, size ->
-                complete(repo.findByMyEntity(id, language, from, size))
-            }
-        }
-    })
-}
-```
-
-```text
-Example Request: GET /en/entity/123456?from=50
-```
+https://bebauer.gitbook.io/webflux-handler-dsl
 
 ## License
 
