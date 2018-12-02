@@ -8,8 +8,7 @@ fun <T> HandlerDsl.pathVariable(variable: PathVariable<T>, init: HandlerDsl.(T) 
 
 ## Description
 
-Extracts a path variable from the `ServerRequest`. See [pathVariables](PathVariables.md) if more than one variable 
-should be extracted.
+Extracts a path variable from the `ServerRequest`. See [pathVariables](pathvariables.md) if more than one variable should be extracted.
 
 ## Example
 
@@ -22,3 +21,4 @@ router {
     })
 }
 ```
+

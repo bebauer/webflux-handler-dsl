@@ -1,18 +1,18 @@
-Webflux Handler DSL
-============
+# Read Me
 
-[![Build Status](https://travis-ci.org/bebauer/webflux-handler-dsl.svg?branch=master)](https://travis-ci.org/bebauer/gcloud-scala)
-[![Download](https://api.bintray.com/packages/bebauer/maven/webflux-handler-dsl/images/download.svg) ](https://bintray.com/bebauer/maven/webflux-handler-dsl/_latestVersion)
+## Webflux Handler DSL
+
+[![Build Status](https://travis-ci.org/bebauer/webflux-handler-dsl.svg?branch=master)](https://travis-ci.org/bebauer/gcloud-scala) [![Download](https://api.bintray.com/packages/bebauer/maven/webflux-handler-dsl/images/download.svg) ](https://bintray.com/bebauer/maven/webflux-handler-dsl/_latestVersion)
 
 This library provides a Kotlin DSL for building Spring Webflux handlers.
 
-# Getting Started
+## Getting Started
 
-## Gradle
+### Gradle
 
-### Repository
+#### Repository
 
-```
+```text
 Groovy:
 
 repositories {
@@ -30,9 +30,9 @@ repositories {
 }
 ```
 
-### Dependency
+#### Dependency
 
-```
+```text
 Groovy:
 
 implementation 'de.bebauer:webflux-handler-dsl:0.5.0'
@@ -42,20 +42,20 @@ Kotlin:
 implementation("de.bebauer:webflux-handler-dsl:0.5.0")
 ```
 
-## Maven
+### Maven
 
-### Repository
+#### Repository
 
-```xml
+```markup
 <repository>
   <id>bintray-bebauer</id>
   <url>https://dl.bintray.com/bebauer/maven</url>
 </repository>
 ```
 
-### Dependency
+#### Dependency
 
-```xml
+```markup
 <dependency>
   <groupId>de.bebauer</groupId>
   <artifactId>webflux-handler-dsl</artifactId>
@@ -63,11 +63,13 @@ implementation("de.bebauer:webflux-handler-dsl:0.5.0")
 </dependency>
 ```
 
-# Examples
+## Examples
 
-## Hello World
+### Hello World
 
 ```kotlin
+import de.bebauer.webflux.handler.dsl.*
+
 @Configuration
 class Config {
 
@@ -80,7 +82,7 @@ class Config {
 }
 ```
 
-## Complex
+### Complex
 
 ```kotlin
 import de.bebauer.webflux.handler.dsl.*
@@ -99,10 +101,11 @@ router {
 }
 ```
 
-```
+```text
 Example Request: GET /en/entity/123456?from=50
 ```
 
-# License
+## License
 
-Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+Licensed under the Apache License, Version 2.0: [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
