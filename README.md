@@ -4,6 +4,8 @@ Webflux Handler DSL
 [![Build Status](https://travis-ci.org/bebauer/webflux-handler-dsl.svg?branch=master)](https://travis-ci.org/bebauer/gcloud-scala)
 [![Download](https://api.bintray.com/packages/bebauer/maven/webflux-handler-dsl/images/download.svg) ](https://bintray.com/bebauer/maven/webflux-handler-dsl/_latestVersion)
 
+This library provides a Kotlin DSL for building Spring Webflux handlers.
+
 # Getting Started
 
 ## Gradle
