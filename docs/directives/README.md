@@ -10,7 +10,6 @@ Directives are the building blocks of this DSL.
 * [failWith](completions/failwith.md)
 * [headerValue](headers/headervalue.md)
 * [optionalCookie](cookies/optionalcookie.md)
-* [optionalHeaderValue](headers/optionalheadervalue.md)
 * [parameter](parameters/parameter.md)
 * [parameters](parameters/parameters.md)
 * [pathVariable](pathvariables/pathvariable.md)

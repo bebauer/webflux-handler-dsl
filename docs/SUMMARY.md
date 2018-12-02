@@ -11,7 +11,6 @@
     * [optionalCookie](directives/cookies/optionalcookie.md)
   * [Headers](directives/headers/README.md)
     * [headerValue](directives/headers/headervalue.md)
-    * [optionalHeaderValue](directives/headers/optionalheadervalue.md)
   * [Path Variables](directives/pathvariables/README.md)
     * [pathVariable](directives/pathvariables/pathvariable.md)
     * [pathVariables](directives/pathvariables/pathvariables.md)

@@ -19,7 +19,7 @@ import java.util.stream.Stream
 
 class HeadersTests {
 
-    data class TestArg<T>(val header: HeaderName<List<T>>, val expected: Any, val value: String) {
+    data class TestArg<T>(val header: HeaderName<List<T>, List<T>>, val expected: Any, val value: String) {
         override fun toString(): String {
             return header.name
         }
@@ -29,7 +29,7 @@ class HeadersTests {
         private const val TEST_HEADER_VALUE = "XXX"
 
         private fun <T> testArg(
-            header: HeaderName<List<T>>,
+            header: HeaderName<List<T>, List<T>>,
             expected: Any = TEST_HEADER_VALUE,
             value: String = TEST_HEADER_VALUE
         ) = arguments(TestArg(header, expected, value))!!
@@ -124,7 +124,7 @@ class HeadersTests {
         .exchange()
         .expectStatus()
 
-    private fun testHeader(header: HeaderName<*>, expected: String, vararg values: String) {
+    private fun testHeader(header: HeaderName<*, *>, expected: String, vararg values: String) {
         val router = router {
             GET("/test", handler {
                 headerValue(header) { value ->
@@ -158,7 +158,7 @@ class HeadersTests {
     fun `optional header value set`() {
         val router = router {
             GET("/test", handler {
-                optionalHeaderValue(Headers.Accept.single()) { accept ->
+                headerValue(Headers.Accept.single().optional()) { accept ->
                     complete {
                         ok().body(BodyInserters.fromObject(accept.toString()))
                     }
@@ -176,7 +176,7 @@ class HeadersTests {
     fun `optional header value missing`() {
         val router = router {
             GET("/test", handler {
-                optionalHeaderValue(Headers.AccessControlMaxAge.single()) { accept ->
+                headerValue(Headers.AccessControlMaxAge.single().optional()) { accept ->
                     complete {
                         ok().body(BodyInserters.fromObject(accept.toString()))
                     }
@@ -188,6 +188,24 @@ class HeadersTests {
             .expectBody(String::class.java)
             .returnResult()
             .apply { assertThat(responseBody).isEqualTo(None.toString()) }
+    }
+
+    @Test
+    fun `optional header value missing with default`() {
+        val router = router {
+            GET("/test", handler {
+                headerValue(Headers.AccessControlMaxAge.single().optional("xxx")) { accept ->
+                    complete {
+                        ok().body(BodyInserters.fromObject(accept))
+                    }
+                }
+            })
+        }
+
+        executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
+            .expectBody(String::class.java)
+            .returnResult()
+            .apply { assertThat(responseBody).isEqualTo("xxx") }
     }
 
     @Test

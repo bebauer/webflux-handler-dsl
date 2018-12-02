@@ -1,8 +1,6 @@
 package de.bebauer.webflux.handler.dsl
 
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.Some
+import arrow.core.*
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -12,10 +10,15 @@ import org.springframework.web.server.ResponseStatusException
  * Represents a header name.
  *
  * @param T type of the header value
+ * @param U the type of the conversion result
  * @param name the name of the header
  * @param converter the value converter function
  */
-data class HeaderName<T>(val name: String, val converter: (List<String>) -> T)
+data class HeaderName<T, U>(
+    val name: String,
+    val converter: (List<String>) -> U,
+    val valueExtractor: (List<String>) -> Either<Throwable, T>
+)
 
 /**
  * Creates a [HeaderName] from a [String].
@@ -23,7 +26,46 @@ data class HeaderName<T>(val name: String, val converter: (List<String>) -> T)
  * @param T the type of the header value
  * @param converter the value converter function
  */
-fun <T> String.header(converter: (List<String>) -> T) = HeaderName(this, converter)
+fun <T> String.header(converter: (List<String>) -> T) = HeaderName(this, converter) {
+    when {
+        it.isEmpty() -> Left(
+            ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Missing required header $this."
+            )
+        )
+        else -> Right(converter(it))
+    }
+}
+
+/**
+ * Makes a [HeaderName] optional.
+ *
+ * @param T the type of the header value
+ * @param U the type of the conversion result
+ */
+fun <T, U> HeaderName<T, U>.optional(): HeaderName<Option<T>, U> = HeaderName(this.name, this.converter) {
+    val value = this.valueExtractor(it)
+    when (value) {
+        is Either.Left -> Right(None)
+        is Either.Right -> value.map { v -> v.toOption() }
+    }
+}
+
+/**
+ * Makes a [HeaderName] optional with a default value.
+ *
+ * @param T the type of the header value
+ * @param U the type of the conversion result
+ * @param defaultValue the default value if the header is missing
+ */
+fun <T, U> HeaderName<T, U>.optional(defaultValue: T): HeaderName<T, U> = HeaderName(this.name, this.converter) {
+    val value = this.valueExtractor(it)
+    when (value) {
+        is Either.Left -> Right(defaultValue)
+        is Either.Right -> value
+    }
+}
 
 /**
  * Creates a [HeaderName] that returns the value as a comma separated string.
@@ -38,8 +80,8 @@ fun String.stringHeader() = this.header { it }
 /**
  * Creates a [HeaderName] that only extracts the first value.
  */
-fun <T> HeaderName<out List<T>>.single() =
-    HeaderName(this.name) { this.converter(it).first() }
+fun <T, U> HeaderName<out List<T>, out List<U>>.single() =
+    this.name.header { this.converter(it).first() }
 
 /**
  * Extracts a header value from the [org.springframework.web.reactive.function.server.ServerRequest].
@@ -56,57 +98,24 @@ fun <T> HeaderName<out List<T>>.single() =
  *
  * @param header the header to extract
  */
-fun <T> HandlerDsl.headerValue(
-    header: HeaderName<T>,
+fun <T, U> HandlerDsl.headerValue(
+    header: HeaderName<T, U>,
     init: HandlerDsl.(T) -> Unit
 ) = extractRequest { request ->
-    val (name, converter) = header
+    val values = header.valueExtractor(request.headers().header(header.name))
 
-    val values = request.headers().header(name)
-
-    if (values.isEmpty()) {
-        failWith(ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing header $name."))
-    } else {
-        init(converter(values))
+    when (values) {
+        is Either.Left -> failWith(values.a)
+        is Either.Right -> init(values.b)
     }
-}
-
-/**
- * Extracts an optional header value from the [org.springframework.web.reactive.function.server.ServerRequest].
- *
- * Example:
- * ```
- * handler {
- *  optionalHeaderValue("test".stringHeader().single()) { test -> // Option<String>
- *      test.map { complete(it) }.getOrElse { failWith("missing") }
- *  }
- * }
- * ```
- *
- * @param header the header to extract
- */
-fun <T> HandlerDsl.optionalHeaderValue(
-    header: HeaderName<T>,
-    init: HandlerDsl.(Option<T>) -> Unit
-) = extractRequest { request ->
-    val (name, converter) = header
-
-    val values = request.headers().header(name)
-
-    val maybeValue = when {
-        values.isEmpty() -> None
-        else -> Some(values)
-    }
-
-    init(maybeValue.map(converter))
 }
 
 /**
  * Container for standard HTTP headers.
  */
 object Headers {
-    val Accept = HeaderName(HttpHeaders.ACCEPT) { it.map(MediaType::valueOf) }
-    val ContentType = HeaderName(HttpHeaders.CONTENT_TYPE) { it.map(MediaType::valueOf) }
+    val Accept = HttpHeaders.ACCEPT.header { it.map(MediaType::valueOf) }
+    val ContentType = HttpHeaders.CONTENT_TYPE.header { it.map(MediaType::valueOf) }
     val Authorization = HttpHeaders.AUTHORIZATION.stringHeader()
     val Location = HttpHeaders.LOCATION.stringHeader()
     val ContentLocation = HttpHeaders.CONTENT_LOCATION.stringHeader()
