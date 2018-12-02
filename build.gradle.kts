@@ -52,6 +52,7 @@ sourceSets["main"].java {
 }
 
 tasks.withType<Test> {
+    @Suppress("UnstableApiUsage")
     useJUnitPlatform()
 }
 
