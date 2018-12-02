@@ -1,4 +1,3 @@
-* [Read Me](../README.md)
 * [Directives](directives/README.md)
   * [Completions](directives/completions/README.md)
     * [complete](directives/completions/complete.md)
