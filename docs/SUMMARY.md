@@ -18,3 +18,4 @@
   * [Query Parameters](directives/parameters/README.md)
     * [parameter](directives/parameters/parameter.md)
     * [parameters](directives/parameters/parameters.md)
+  * [extractRequest](directives/extractRequest.md)
