@@ -11,6 +11,7 @@ Directives are the building blocks of this DSL.
 * [extractRequestBody](request/extractRequestBody.md)
 * [extractRequestBodyToFlux](request/extractRequestBodyToFlux.md)
 * [extractRequestBodyToMono](request/extractRequestBodyToMono.md)
+* [extractRequestUri](request/extractRequestUri.md)
 * [failWith](completions/failwith.md)
 * [headerValue](headers/headervalue.md)
 * [optionalCookie](cookies/optionalcookie.md)
