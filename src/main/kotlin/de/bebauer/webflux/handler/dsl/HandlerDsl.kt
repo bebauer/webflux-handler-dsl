@@ -57,10 +57,19 @@ open class HandlerDsl(
     /**
      * Complete the handler with the specified response.
      *
-     * @param response the [ServerResponse] Mono.
+     * @param response the [ServerResponse] Mono
      */
     fun complete(response: Mono<out ServerResponse>) {
-        this.response = Some(Right(response))
+        complete(Right(response))
+    }
+
+    /**
+     * Complete the handler with the specified either an exception or the response.
+     *
+     * @param result with which to complete
+     */
+    fun complete(result: Either<Throwable, Mono<out ServerResponse>>) {
+        response = Some(result)
     }
 
     /**
@@ -69,7 +78,7 @@ open class HandlerDsl(
      * @param throwable the exception that caused the failure
      */
     fun failWith(throwable: Throwable) {
-        this.response = Some(Left(throwable))
+        complete(Left(throwable))
     }
 
     /**
@@ -84,6 +93,15 @@ open class HandlerDsl(
      */
     fun extractRequest(init: HandlerDsl.(ServerRequest) -> Unit) {
         init(request)
+    }
+
+    /**
+     * Executes a handler DSL and returns it's result without completing.
+     */
+    fun execute(init: HandlerDsl.() -> Unit): Either<Throwable, Mono<out ServerResponse>> {
+        val dsl = HandlerDsl(request, init)
+
+        return dsl.invoke()
     }
 
     override fun invoke(): Either<Throwable, Mono<out ServerResponse>> {

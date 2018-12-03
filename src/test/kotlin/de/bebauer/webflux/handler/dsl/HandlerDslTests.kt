@@ -1,5 +1,6 @@
 package de.bebauer.webflux.handler.dsl
 
+import arrow.core.Either
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -49,5 +50,40 @@ class HandlerDslTests {
         runHandlerTest(
             handler { failWith("Failure") },
             { expectStatus().is5xxServerError })
+    }
+
+    @Test
+    fun `execute sub DSL`() {
+        runHandlerTest(
+            handler {
+                val result = execute {
+                    complete("Test")
+                }
+
+                when (result) {
+                    is Either.Left -> failWith("Oh no!")
+                    is Either.Right -> complete("Yay!")
+                }
+            },
+            {
+                expectStatus().isOk.expectBody(String::class.java).returnResult()
+                    .apply { assertThat(responseBody).isEqualTo("Yay!") }
+            })
+    }
+
+    @Test
+    fun `complete with Either`() {
+        runHandlerTest(
+            handler {
+                val result = execute {
+                    complete("Test")
+                }
+
+                complete(result)
+            },
+            {
+                expectStatus().isOk.expectBody(String::class.java).returnResult()
+                    .apply { assertThat(responseBody).isEqualTo("Test") }
+            })
     }
 }
