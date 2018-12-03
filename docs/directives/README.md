@@ -6,7 +6,10 @@ Directives are the building blocks of this DSL.
 
 * [complete](completions/complete.md)
 * [cookie](cookies/cookie.md)
-* [extractRequest](extractRequest.md)
+* [extractRequest](request/extractRequest.md)
+* [extractRequestBody](request/extractRequestBody.md)
+* [extractRequestBodyToFlux](request/extractRequestBodyToFlux.md)
+* [extractRequestBodyToMono](request/extractRequestBodyToMono.md)
 * [failWith](completions/failwith.md)
 * [headerValue](headers/headervalue.md)
 * [optionalCookie](cookies/optionalcookie.md)
