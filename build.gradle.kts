@@ -2,6 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import pl.allegro.tech.build.axion.release.domain.PredefinedVersionIncrementer
 import de.bebauer.webflux.handler.dsl.codegen.CodeGen
 import de.bebauer.webflux.handler.dsl.codegen.codeGenOutputDir
+import pl.allegro.tech.build.axion.release.domain.hooks.HookContext
+import pl.allegro.tech.build.axion.release.domain.hooks.HooksConfig
 
 plugins {
     kotlin("jvm") version "1.3.10"
@@ -20,6 +22,18 @@ repositories {
 
 scmVersion {
     versionIncrementer = PredefinedVersionIncrementer.versionIncrementerFor("incrementMinor")
+
+    hooks(closureOf<HooksConfig> {
+        pre(
+            "fileUpdate",
+            mapOf(
+                "files" to listOf("README.md", "docs/gettingStarted/gradle.md", "docs/gettingStarted/maven.md"),
+                "pattern" to KotlinClosure2<String, HookContext, String>({ v, _ -> v.replace(".", "\\.") }),
+                "replacement" to KotlinClosure2<String, HookContext, String>({ v, _ -> v })
+            )
+        )
+        pre("commit")
+    })
 }
 
 val springVersion = "5.1.2.RELEASE"
