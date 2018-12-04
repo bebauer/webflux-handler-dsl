@@ -3,7 +3,9 @@
 ## Signature
 
 ```kotlin
-fun <T> HandlerDsl.pathVariable(variable: PathVariable<T>, init: HandlerDsl.(T) -> Unit)
+fun <T> HandlerDsl.pathVariable(
+    variable: PathVariable<T>, 
+    init: HandlerDsl.(T) -> Unit)
 ```
 
 ## Description

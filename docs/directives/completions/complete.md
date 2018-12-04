@@ -15,9 +15,12 @@ fun <T> HandlerDsl.complete(status: HttpStatus, value: T)
 
 inline fun <reified T> HandlerDsl.complete(publisher: Publisher<T>)
 
-inline fun <reified T> HandlerDsl.complete(status: HttpStatus, publisher: Publisher<T>)
+inline fun <reified T> HandlerDsl.complete(
+    status: HttpStatus, 
+    publisher: Publisher<T>)
 
-fun HandlerDsl.complete(init: ServerResponse.BodyBuilder.() -> Mono<out ServerResponse>)
+fun HandlerDsl.complete(
+    init: ServerResponse.BodyBuilder.() -> Mono<out ServerResponse>)
 
 fun HandlerDsl.complete(
     status: HttpStatus,

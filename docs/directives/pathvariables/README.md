@@ -7,10 +7,13 @@
 
 ## String Extensions
 
-The arguments for the directives expect a PathVariable instance. Those instances can and should be created through String extensions. This way the path variable will be converted into the correct type.
+The arguments for the directives expect a `PathVariable` instance. 
+Those instances can and should be created through String extensions. 
+This way the path variable will be converted into the correct type.
 
 ### Provided Extension Methods
 
+* pathVariable\(converter\)
 * stringVar\(\)
 * booleanVar\(\)
 * byteVar\(\)
