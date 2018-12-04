@@ -18,7 +18,7 @@ The `de.bebauer.webflux.handler.dsl.Headers` object contains constants for all c
 ```kotlin
 // with constant
 router {
-    GET("/{id}", handler {
+    GET("/", handler {
         headerValue(Headers.Location.single()) { location ->
             complete(repo.findByLocation(location))
         }
@@ -27,7 +27,7 @@ router {
 
 // without constant
 router {
-    GET("/{id}", handler {
+    GET("/", handler {
         headerValue("location".stringHeader().single()) { location ->
             complete(repo.findByLocation(location))
         }

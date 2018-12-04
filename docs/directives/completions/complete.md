@@ -33,6 +33,8 @@ fun HandlerDsl.complete(
     status: HttpStatus,
     inserter: BodyInserter<*, in ServerHttpResponse>
 )
+
+fun complete(result: Either<Throwable, Mono<out ServerResponse>>)
 ```
 
 ## Examples
