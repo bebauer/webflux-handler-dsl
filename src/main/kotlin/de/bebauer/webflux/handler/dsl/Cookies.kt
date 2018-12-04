@@ -1,11 +1,92 @@
 package de.bebauer.webflux.handler.dsl
 
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.Some
-import arrow.core.toOption
+import arrow.core.*
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
+
+/**
+ * Represents a cookie name.
+ *
+ * @param T type of the cookie value
+ * @param U the type of the conversion result
+ * @param name the name of the cookie
+ * @param converter the value converter function
+ * @param valueExtractor value extractor function
+ */
+data class CookieName<T, U>(
+    val name: String,
+    val converter: (List<String>) -> U,
+    val valueExtractor: (Option<List<String>>) -> Either<Throwable, T>
+)
+
+/**
+ * Creates a [CookieName] from a [String].
+ *
+ * @param T the type of the cookie value
+ * @param converter the value converter function
+ */
+fun <T> String.cookieName(converter: (List<String>) -> T) = CookieName(this, converter) {
+    when (it) {
+        is None -> Left(
+            ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Missing required cookie $this."
+            )
+        )
+        is Some -> {
+            if (it.t.isEmpty()) {
+                Left(
+                    ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Missing required cookie $this."
+                    )
+                )
+            } else {
+                Right(converter(it.t))
+            }
+        }
+    }
+}
+
+/**
+ * Makes a [CookieName] optional.
+ *
+ * @param T the type of the cookie value
+ * @param U the type of the conversion result
+ */
+fun <T, U> CookieName<T, U>.optional(): CookieName<Option<T>, U> = CookieName(this.name, this.converter) {
+    val value = this.valueExtractor(it)
+    when (value) {
+        is Either.Left -> Right(None)
+        is Either.Right -> value.map { v -> v.toOption() }
+    }
+}
+
+/**
+ * Makes a [CookieName] optional with a default value.
+ *
+ * @param T the type of the cookie value
+ * @param U the type of the conversion result
+ * @param defaultValue the default value if the header is missing
+ */
+fun <T, U> CookieName<T, U>.optional(defaultValue: T): CookieName<T, U> = CookieName(this.name, this.converter) {
+    val value = this.valueExtractor(it)
+    when (value) {
+        is Either.Left -> Right(defaultValue)
+        is Either.Right -> value
+    }
+}
+
+/**
+ * Creates a [CookieName] that only extracts the first value.
+ */
+fun <T, U> CookieName<out List<T>, out List<U>>.single() =
+    this.name.cookieName { this.converter(it).first() }
+
+/**
+ * Creates a required [CookieName] that returns the value as list of strings.
+ */
+fun String.stringCookie() = this.cookieName { it }
 
 /**
  * Extract a cookie from the [org.springframework.web.reactive.function.server.ServerRequest].
@@ -13,40 +94,19 @@ import org.springframework.web.server.ResponseStatusException
  * Example:
  * ```
  * handler {
- *  cookie("test) { (value) ->
+ *  cookie("test".stringCookie()) { (value) ->
  *      complete(value)
  *  }
  * }
  * ```
  *
- * @param name the name of the cookie
+ * @param cookie the name of the cookie as a [CookieName]
  */
-fun HandlerDsl.cookie(name: String, init: HandlerDsl.(List<String>) -> Unit) = extractRequest { request ->
-    val cookies = request.cookies()[name].toOption()
+fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> Unit) = extractRequest { request ->
+    val values = cookie.valueExtractor(request.cookies()[cookie.name].toOption().map { v -> v.map { it.value } })
 
-    when (cookies) {
-        is None -> failWith(ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing cookie with name $name."))
-        is Some -> init(cookies.t.map { it.value })
+    when (values) {
+        is Either.Left -> failWith(values.a)
+        is Either.Right -> init(values.b)
     }
-}
-
-/**
- * Extract an optional cookie from the [org.springframework.web.reactive.function.server.ServerRequest].
- *
- * Example:
- * ```
- * handler {
- *  optionalCookie("test) { (value) ->
- *      value.map { complete(it) }.getOrElse { failWith("missing") }
- *  }
- * }
- * ```
- *
- * @param name the name of the cookie
- */
-fun HandlerDsl.optionalCookie(
-    name: String,
-    init: HandlerDsl.(Option<List<String>>) -> Unit
-) = extractRequest { request ->
-    init(request.cookies()[name].toOption().map { list -> list.map { it.value } })
 }

@@ -44,3 +44,15 @@ Then the extracted value will be of type `Optional<T>`.
 ```kotlin
 "myHeader".stringHeader().single().optional() // will extract a Option<String>
 ```
+
+### Optional Header with Default Value
+
+```kotlin
+"myHeader".stringHeader().optional("abc") // will extract a List<String>
+```
+
+### Single Optional Header with Default Value
+
+```kotlin
+"myHeader".stringHeader().single().optional("abc") // will extract a String
+```

@@ -8,7 +8,6 @@
     * [failWith](directives/completions/failwith.md)
   * [Cookies](directives/cookies/README.md)
     * [cookie](directives/cookies/cookie.md)
-    * [optionalCookie](directives/cookies/optionalcookie.md)
   * [Headers](directives/headers/README.md)
     * [headerValue](directives/headers/headervalue.md)
   * [Path Variables](directives/pathvariables/README.md)

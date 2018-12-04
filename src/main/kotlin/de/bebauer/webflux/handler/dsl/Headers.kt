@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException
  * @param U the type of the conversion result
  * @param name the name of the header
  * @param converter the value converter function
+ * @param valueExtractor value extractor function
  */
 data class HeaderName<T, U>(
     val name: String,
@@ -78,7 +79,7 @@ fun String.rawHeader() = this.header { it.joinToString() }
 fun String.stringHeader() = this.header { it }
 
 /**
- * Creates a [HeaderName] that only extracts the first value.
+ * Creates a required [HeaderName] that only extracts the first value.
  */
 fun <T, U> HeaderName<out List<T>, out List<U>>.single() =
     this.name.header { this.converter(it).first() }
@@ -96,7 +97,7 @@ fun <T, U> HeaderName<out List<T>, out List<U>>.single() =
  * }
  * ```
  *
- * @param header the header to extract
+ * @param header the header to extract as a [HeaderName]
  */
 fun <T, U> HandlerDsl.headerValue(
     header: HeaderName<T, U>,
