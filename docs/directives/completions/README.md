@@ -19,6 +19,23 @@ handler {
 }
 ```
 
+In the end complete will end in an `Mono<ServerResponse>`. Therefore the `or` operator can be used on completions.
+When the `Mono<ServerResponse>` is empty, the alternative completion will be returned.
+
+```kotlin
+handler {
+    complete(Mono.empty()) or complete(HttpStatus.NOT_FOUND) 
+    // Returns 404 Status
+}
+
+handler {
+    complete("123") or complete(HttpStatus.NOT_FOUND) 
+    // Unnecessary, because it Will always return 200 with body 123.
+}
+```
+
+Completions can be chained indefinitely and the first non empty `Mono<ServerResponse>` will be returned.
+
 ## Directives
 
 * [complete](complete.md)

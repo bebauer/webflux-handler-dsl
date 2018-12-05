@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters.fromObject
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 class CompletionsTests {
@@ -24,7 +25,7 @@ class CompletionsTests {
     }
 
     @Test
-    fun `complete with publisher`() {
+    fun `complete with mono`() {
         runHandlerTest(
             handler {
                 complete(Mono.just("xxx"))
@@ -32,6 +33,18 @@ class CompletionsTests {
             {
                 expectStatus().isOk.expectBody(String::class.java).returnResult()
                     .apply { assertThat(responseBody).isEqualTo("xxx") }
+            })
+    }
+
+    @Test
+    fun `complete with flux`() {
+        runHandlerTest(
+            handler {
+                complete(Flux.fromIterable(listOf(1, 2)))
+            },
+            {
+                expectStatus().isOk.expectBodyList(Int::class.java).returnResult()
+                    .apply { assertThat(responseBody).containsExactly(1, 2) }
             })
     }
 
@@ -48,7 +61,7 @@ class CompletionsTests {
     }
 
     @Test
-    fun `complete with status and publisher`() {
+    fun `complete with status and mono`() {
         runHandlerTest(
             handler {
                 complete(HttpStatus.UNAUTHORIZED, Mono.just("xxx"))
@@ -56,6 +69,18 @@ class CompletionsTests {
             {
                 expectStatus().isUnauthorized.expectBody(String::class.java).returnResult()
                     .apply { assertThat(responseBody).isEqualTo("xxx") }
+            })
+    }
+
+    @Test
+    fun `complete with status and flux`() {
+        runHandlerTest(
+            handler {
+                complete(HttpStatus.UNAUTHORIZED, Flux.fromIterable(listOf(1, 2)))
+            },
+            {
+                expectStatus().isUnauthorized.expectBodyList(Int::class.java).returnResult()
+                    .apply { assertThat(responseBody).containsExactly(1, 2) }
             })
     }
 

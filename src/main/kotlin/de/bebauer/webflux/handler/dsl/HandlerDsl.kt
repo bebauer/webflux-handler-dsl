@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono
  *
  * @see HandlerDsl
  */
-fun handler(init: HandlerDsl.() -> Unit): (ServerRequest) -> Mono<out ServerResponse> = {
+fun handler(init: HandlerDsl.() -> Unit): (ServerRequest) -> Mono<ServerResponse> = {
     val result = HandlerDsl(it, init).invoke()
 
     when (result) {
@@ -30,6 +30,8 @@ fun handler(init: HandlerDsl.() -> Unit): (ServerRequest) -> Mono<out ServerResp
         is Either.Right -> result.b
     }
 }
+
+class CompleteOperation(internal val response: Either<Throwable, Mono<ServerResponse>>)
 
 /**
  * Provide a `(ServerRequest) -> Mono<out ServerResponse>` Kotlin DSL in order to be able to write idiomatic Kotlin code.
@@ -39,11 +41,29 @@ open class HandlerDsl(
     private val init: HandlerDsl.() -> Unit
 ) : () -> Either<Throwable, Mono<out ServerResponse>> {
 
-    private var response: Option<Either<Throwable, Mono<out ServerResponse>>> = None
-        set(value) {
-            field = when (field) {
-                is None -> value
-                else -> Some(
+    private var completion: Option<CompleteOperation> = None
+
+    /**
+     * Combines two complete operations with <code>or</code>.
+     *
+     * @param other the other [CompleteOperation]
+     */
+    infix fun CompleteOperation.or(other: CompleteOperation): CompleteOperation {
+        return updateCompleteOperation(CompleteOperation(this.response.flatMap { left ->
+            other.response.map { right ->
+                left.switchIfEmpty(right)
+            }
+        }), true)
+    }
+
+    private fun updateCompleteOperation(
+        completeOperation: CompleteOperation,
+        allowReplace: Boolean = false
+    ): CompleteOperation {
+        completion = completion.map {
+            when (allowReplace) {
+                true -> completeOperation
+                false -> CompleteOperation(
                     Left(
                         ResponseStatusException(
                             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -52,15 +72,18 @@ open class HandlerDsl(
                     )
                 )
             }
-        }
+        }.orElse { Some(completeOperation) }
+
+        return completeOperation
+    }
 
     /**
      * Complete the handler with the specified response.
      *
      * @param response the [ServerResponse] Mono
      */
-    fun complete(response: Mono<out ServerResponse>) {
-        complete(Right(response))
+    fun complete(response: Mono<ServerResponse>): CompleteOperation {
+        return complete(Right(response))
     }
 
     /**
@@ -68,8 +91,8 @@ open class HandlerDsl(
      *
      * @param result with which to complete
      */
-    fun complete(result: Either<Throwable, Mono<out ServerResponse>>) {
-        response = Some(result)
+    fun complete(result: Either<Throwable, Mono<ServerResponse>>): CompleteOperation {
+        return updateCompleteOperation(CompleteOperation(result))
     }
 
     /**
@@ -77,16 +100,15 @@ open class HandlerDsl(
      *
      * @param throwable the exception that caused the failure
      */
-    fun failWith(throwable: Throwable) {
-        complete(Left(throwable))
-    }
+    fun failWith(throwable: Throwable): CompleteOperation = complete(Left(throwable))
 
     /**
      *  Fails the handler with an Internal Server Error and the specified message.
      *
      *  @param message the error message
      */
-    fun failWith(message: String) = failWith(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message))
+    fun failWith(message: String): CompleteOperation =
+        failWith(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message))
 
     /**
      * Extract the request.
@@ -98,16 +120,16 @@ open class HandlerDsl(
     /**
      * Executes a handler DSL and returns it's result without completing.
      */
-    fun execute(init: HandlerDsl.() -> Unit): Either<Throwable, Mono<out ServerResponse>> {
+    fun execute(init: HandlerDsl.() -> Unit): Either<Throwable, Mono<ServerResponse>> {
         val dsl = HandlerDsl(request, init)
 
         return dsl.invoke()
     }
 
-    override fun invoke(): Either<Throwable, Mono<out ServerResponse>> {
+    override fun invoke(): Either<Throwable, Mono<ServerResponse>> {
         init()
 
-        return response.getOrElse {
+        return completion.map { it.response }.getOrElse {
             Left(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Incomplete DSL."))
         }
     }

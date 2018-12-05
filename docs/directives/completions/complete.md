@@ -3,28 +3,34 @@
 ## Signature
 
 ```kotlin
-fun complete(response: Mono<out ServerResponse>)
+fun complete(response: Mono<ServerResponse>)
 
 fun HandlerDsl.complete()
 
 fun HandlerDsl.complete(status: HttpStatus)
 
-fun <T> HandlerDsl.complete(value: T)
+fun <T> HandlerDsl.complete(value: T?)
 
-fun <T> HandlerDsl.complete(status: HttpStatus, value: T)
+fun <T> HandlerDsl.complete(status: HttpStatus, value: T?)
 
-inline fun <reified T> HandlerDsl.complete(publisher: Publisher<T>)
+inline fun <reified T> HandlerDsl.complete(flux: Flux<T>)
+
+inline fun <reified T> HandlerDsl.complete(mono: Mono<T>)
 
 inline fun <reified T> HandlerDsl.complete(
     status: HttpStatus, 
-    publisher: Publisher<T>)
+    flux: Flux<T>)
+    
+inline fun <reified T> HandlerDsl.complete(
+    status: HttpStatus, 
+    mono: Mono<T>)
 
 fun HandlerDsl.complete(
-    init: ServerResponse.BodyBuilder.() -> Mono<out ServerResponse>)
+    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>)
 
 fun HandlerDsl.complete(
     status: HttpStatus,
-    init: ServerResponse.BodyBuilder.() -> Mono<out ServerResponse>
+    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>
 )
 
 fun HandlerDsl.complete(inserter: BodyInserter<*, in ServerHttpResponse>)
@@ -34,7 +40,7 @@ fun HandlerDsl.complete(
     inserter: BodyInserter<*, in ServerHttpResponse>
 )
 
-fun complete(result: Either<Throwable, Mono<out ServerResponse>>)
+fun complete(result: Either<Throwable, Mono<ServerResponse>>)
 ```
 
 ## Examples

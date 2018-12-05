@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
+import reactor.core.publisher.Mono
 
 class HandlerDslTests {
 
@@ -84,6 +85,41 @@ class HandlerDslTests {
             {
                 expectStatus().isOk.expectBody(String::class.java).returnResult()
                     .apply { assertThat(responseBody).isEqualTo("Test") }
+            })
+    }
+
+    @Test
+    fun `alternative completions last`() {
+        runHandlerTest(
+            handler {
+                complete(Mono.empty()) or complete(Mono.empty<String>()) or complete(HttpStatus.NOT_FOUND, "Test")
+            },
+            {
+                expectStatus().isNotFound.expectBody(String::class.java).returnResult()
+                    .apply { assertThat(responseBody).isEqualTo("Test") }
+            })
+    }
+
+    @Test
+    fun `alternative completions first`() {
+        runHandlerTest(
+            handler {
+                complete("1") or complete(HttpStatus.NOT_FOUND, "1")
+            },
+            {
+                expectStatus().isOk.expectBody(String::class.java).returnResult()
+                    .apply { assertThat(responseBody).isEqualTo("1") }
+            })
+    }
+
+    @Test
+    fun `alternative failWith`() {
+        runHandlerTest(
+            handler {
+                complete(Mono.empty()) or failWith("Error!")
+            },
+            {
+                expectStatus().is5xxServerError
             })
     }
 }
