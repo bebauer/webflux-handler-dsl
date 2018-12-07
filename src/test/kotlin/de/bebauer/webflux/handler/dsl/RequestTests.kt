@@ -10,12 +10,42 @@ class RequestTests {
         runHandlerTest(
             handler {
                 extractRequestUri { uri ->
-                    complete(uri)
+                    complete(uri.toString())
                 }
             },
             {
                 expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { Assertions.assertThat(responseBody).isEqualTo("\"http://localhost/test\"") }
+                    .apply { Assertions.assertThat(responseBody).isEqualTo("http://localhost/test") }
+            }
+        )
+    }
+
+    @Test
+    fun `extract request host`() {
+        runHandlerTest(
+            handler {
+                extractHost { host ->
+                    complete(host)
+                }
+            },
+            {
+                expectStatus().isOk.expectBody(String::class.java).returnResult()
+                    .apply { Assertions.assertThat(responseBody).isEqualTo("localhost") }
+            }
+        )
+    }
+
+    @Test
+    fun `extract request scheme`() {
+        runHandlerTest(
+            handler {
+                extractScheme { scheme ->
+                    complete(scheme)
+                }
+            },
+            {
+                expectStatus().isOk.expectBody(String::class.java).returnResult()
+                    .apply { Assertions.assertThat(responseBody).isEqualTo("http") }
             }
         )
     }

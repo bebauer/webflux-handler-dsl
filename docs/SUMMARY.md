@@ -21,5 +21,7 @@
     * [extractRequestBody](directives/request/extractRequestBody.md)
     * [extractRequestBodyToFlux](directives/request/extractRequestBodyToFlux.md)
     * [extractRequestBodyToMono](directives/request/extractRequestBodyToMono.md)
+    * [extractRequestHost](directives/request/extractHost.md)
+    * [extractRequestScheme](directives/request/extractScheme.md)
     * [extractRequestUri](directives/request/extractRequestUri.md)
   * [execute](directives/execute.md)

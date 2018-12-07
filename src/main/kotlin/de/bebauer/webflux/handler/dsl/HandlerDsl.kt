@@ -123,7 +123,7 @@ open class HandlerDsl(
     fun execute(init: HandlerDsl.() -> Unit): Either<Throwable, Mono<ServerResponse>> {
         val dsl = HandlerDsl(request, init)
 
-        return dsl.invoke()
+        return Try { dsl.invoke() }.toEither().flatMap { it }
     }
 
     override fun invoke(): Either<Throwable, Mono<ServerResponse>> {
