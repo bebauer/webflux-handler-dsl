@@ -32,7 +32,7 @@ class QueryParametersTests {
                     )
                 ) { v1, v2, v3, v4, v5, v6, v7, v8 ->
                     complete {
-                        ok().body(fromObject("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8"))
+                        body(fromObject("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8"))
                     }
                 }
             })
@@ -80,7 +80,7 @@ class QueryParametersTests {
             GET("/blah", handler {
                 parameter("test".csvParam()) { test ->
                     complete {
-                        ok().contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
+                        contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
                     }
                 }
             })
@@ -104,7 +104,7 @@ class QueryParametersTests {
             GET("/blah", handler {
                 parameter("test".csvParam(String::toInt)) { test ->
                     complete {
-                        ok().contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
+                        contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
                     }
                 }
             })

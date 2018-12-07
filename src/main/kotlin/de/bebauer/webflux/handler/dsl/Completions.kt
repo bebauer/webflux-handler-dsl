@@ -1,3 +1,5 @@
+@file:Suppress("UnassignedFluxMonoInstance")
+
 package de.bebauer.webflux.handler.dsl
 
 import org.springframework.http.HttpStatus
