@@ -1,7 +1,7 @@
 package de.bebauer.webflux.handler.dsl
 
-import arrow.core.*
 import org.springframework.http.HttpStatus
+import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.server.ResponseStatusException
@@ -22,16 +22,15 @@ import reactor.core.publisher.Mono
  *
  * @see HandlerDsl
  */
-fun handler(init: HandlerDsl.() -> Unit): (ServerRequest) -> Mono<ServerResponse> = {
-    val result = HandlerDsl(it, init).invoke()
-
-    when (result) {
-        is Either.Left -> throw result.a
-        is Either.Right -> result.b
-    }
+fun handler(init: HandlerDsl.() -> Unit): (ServerRequest) -> Mono<ServerResponse> = { request ->
+    Mono.just(HandlerDsl(request, init))
+        .flatMap { dsl ->
+            dsl.invoke(ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).body(fromObject("Missing DSL.")))
+        }
 }
 
-class CompleteOperation(internal val response: Either<Throwable, Mono<ServerResponse>>)
+
+class CompleteOperation(internal val response: Mono<ServerResponse>)
 
 /**
  * Provide a `(ServerRequest) -> Mono<out ServerResponse>` Kotlin DSL in order to be able to write idiomatic Kotlin code.
@@ -39,9 +38,9 @@ class CompleteOperation(internal val response: Either<Throwable, Mono<ServerResp
 open class HandlerDsl(
     private val request: ServerRequest,
     private val init: HandlerDsl.() -> Unit
-) : () -> Either<Throwable, Mono<out ServerResponse>> {
+) : (Mono<ServerResponse>) -> Mono<ServerResponse> {
 
-    private var completion: Option<CompleteOperation> = None
+    private var completion: Mono<CompleteOperation> = Mono.empty()
 
     /**
      * Combines two complete operations with <code>or</code>.
@@ -49,11 +48,7 @@ open class HandlerDsl(
      * @param other the other [CompleteOperation]
      */
     infix fun CompleteOperation.or(other: CompleteOperation): CompleteOperation {
-        return updateCompleteOperation(CompleteOperation(this.response.flatMap { left ->
-            other.response.map { right ->
-                left.switchIfEmpty(right)
-            }
-        }), true)
+        return updateCompleteOperation(CompleteOperation(this.response.switchIfEmpty(other.response)), true)
     }
 
     private fun updateCompleteOperation(
@@ -64,7 +59,7 @@ open class HandlerDsl(
             when (allowReplace) {
                 true -> completeOperation
                 false -> CompleteOperation(
-                    Left(
+                    Mono.error(
                         ResponseStatusException(
                             HttpStatus.INTERNAL_SERVER_ERROR,
                             "Response is already set."
@@ -72,7 +67,7 @@ open class HandlerDsl(
                     )
                 )
             }
-        }.orElse { Some(completeOperation) }
+        }.defaultIfEmpty(completeOperation)
 
         return completeOperation
     }
@@ -83,16 +78,7 @@ open class HandlerDsl(
      * @param response the [ServerResponse] Mono
      */
     fun complete(response: Mono<ServerResponse>): CompleteOperation {
-        return complete(Right(response))
-    }
-
-    /**
-     * Complete the handler with the specified either an exception or the response.
-     *
-     * @param result with which to complete
-     */
-    fun complete(result: Either<Throwable, Mono<ServerResponse>>): CompleteOperation {
-        return updateCompleteOperation(CompleteOperation(result))
+        return updateCompleteOperation(CompleteOperation(response))
     }
 
     /**
@@ -100,7 +86,7 @@ open class HandlerDsl(
      *
      * @param throwable the exception that caused the failure
      */
-    fun failWith(throwable: Throwable): CompleteOperation = complete(Left(throwable))
+    fun failWith(throwable: Throwable): CompleteOperation = complete(Mono.error(throwable))
 
     /**
      *  Fails the handler with an Internal Server Error and the specified message.
@@ -120,17 +106,27 @@ open class HandlerDsl(
     /**
      * Executes a handler DSL and returns it's result without completing.
      */
-    fun execute(init: HandlerDsl.() -> Unit): Either<Throwable, Mono<ServerResponse>> {
-        val dsl = HandlerDsl(request, init)
-
-        return Try { dsl.invoke() }.toEither().flatMap { it }
+    fun execute(init: HandlerDsl.() -> Unit): Mono<ServerResponse> {
+        return handler(init)(request)
     }
 
-    override fun invoke(): Either<Throwable, Mono<ServerResponse>> {
-        init()
-
-        return completion.map { it.response }.getOrElse {
-            Left(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Incomplete DSL."))
-        }
+    override fun invoke(input: Mono<ServerResponse>): Mono<ServerResponse> {
+        return input
+            .map {
+                init()
+            }
+            .flatMap {
+                completion
+                    .map { c -> c.response }
+                    .switchIfEmpty(
+                        Mono.error<Mono<ServerResponse>>(
+                            ResponseStatusException(
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Incomplete DSL."
+                            )
+                        )
+                    )
+            }
+            .flatMap { it }
     }
 }

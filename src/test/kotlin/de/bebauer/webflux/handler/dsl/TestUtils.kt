@@ -5,9 +5,9 @@ import org.springframework.web.reactive.function.server.*
 import reactor.core.publisher.Mono
 
 fun runHandlerTest(
-    handler: (ServerRequest) -> Mono<out ServerResponse>,
+    handler: (ServerRequest) -> Mono<ServerResponse>,
     validation: WebTestClient.ResponseSpec.() -> Unit,
-    route : RouterFunctionDsl.((ServerRequest) -> Mono<out ServerResponse>) -> Unit = { GET("/test", it) },
+    route : RouterFunctionDsl.((ServerRequest) -> Mono<ServerResponse>) -> Unit = { GET("/test", it) },
     request: WebTestClient.() -> WebTestClient.RequestHeadersSpec<*> = { get().uri("/test") }
 ) {
     val router = router {

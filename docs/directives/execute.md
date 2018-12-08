@@ -4,27 +4,27 @@
 
 ```kotlin
 fun execute(init: HandlerDsl.() -> Unit)
-    : Either<Throwable, Mono<out ServerResponse>>
+    : Mono<ServerResponse>
 ```
 
 ## Description
 
-`execute` runs a handler DSL and return it's result.
+`execute` runs a handler DSL and return it's result, which is the `Mono<ServerRespone>` from the nested block.
 
 ## Example
 
 ```kotlin
 router {
     GET("/", handler {
-        val result = execute {
+        val response = execute {
             complete("ok")
         }
         
-        if (result is Either.Left) {
-            // log error ...
-        }
-        
-        complete(result)
+        complete(response.onErrorResume {
+            println(it) // log the error
+            
+            Mono.error(it)
+        })
     })
 }
 ```

@@ -1,11 +1,12 @@
 package de.bebauer.webflux.handler.dsl
 
-import arrow.core.Either
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.HttpStatus
+import org.springframework.web.reactive.function.BodyInserters.fromObject
+import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 
@@ -54,21 +55,34 @@ class HandlerDslTests {
     }
 
     @Test
-    fun `execute sub DSL`() {
+    fun `execute sub DSL ok`() {
         runHandlerTest(
             handler {
                 val result = execute {
                     complete("Test")
                 }
 
-                when (result) {
-                    is Either.Left -> failWith("Oh no!")
-                    is Either.Right -> complete("Yay!")
-                }
+                complete(result.flatMap { ServerResponse.from(it).body(fromObject("Yay!")) })
             },
             {
                 expectStatus().isOk.expectBody(String::class.java).returnResult()
                     .apply { assertThat(responseBody).isEqualTo("Yay!") }
+            })
+    }
+
+    @Test
+    fun `execute sub DSL failure`() {
+        runHandlerTest(
+            handler {
+                val result = execute {
+                    failWith("Test")
+                }
+
+                complete(result.onErrorResume { ServerResponse.ok().body(fromObject("Nay!")) })
+            },
+            {
+                expectStatus().isOk.expectBody(String::class.java).returnResult()
+                    .apply { assertThat(responseBody).isEqualTo("Nay!") }
             })
     }
 

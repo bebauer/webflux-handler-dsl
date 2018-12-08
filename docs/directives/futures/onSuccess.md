@@ -4,26 +4,26 @@
 
 ```kotlin
 fun <T> HandlerDsl.onSuccess(
-    future: Future<T>, 
+    future: CompletableFuture<T>, 
     init: HandlerDsl.(T) -> Unit)
 
 fun <T> HandlerDsl.onSuccess(
-    future: Future<T>, 
+    future: CompletableFuture<T>, 
     timeout: Duration, 
     init: HandlerDsl.(T) -> Unit)
 
 fun <T> HandlerDsl.onSuccess(
-    future: Future<T>, 
+    future: CompletableFuture<T>, 
     timeout: Timeout, 
     init: HandlerDsl.(T) -> Unit)
 
 fun <T> HandlerDsl.onSuccess(
-    future: Future<T>, 
+    future: CompletableFuture<T>, 
     timeout: Option<Duration>, 
     init: HandlerDsl.(T) -> Unit)
 
 fun <T> HandlerDsl.onSuccess(
-    future: Future<T>, 
+    future: CompletableFuture<T>, 
     timeout: Option<Timeout>, 
     init: HandlerDsl.(T) -> Unit)
 ```

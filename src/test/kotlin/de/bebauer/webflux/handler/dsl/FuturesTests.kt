@@ -36,7 +36,7 @@ class FuturesTests {
                 onComplete(CompletableFuture.failedFuture<String>(RuntimeException("err"))) { result ->
                     when (result) {
                         is Try.Success -> complete(result.value)
-                        is Try.Failure -> complete(result.exception.cause?.message)
+                        is Try.Failure -> complete(result.exception.message)
                     }
                 }
             },
