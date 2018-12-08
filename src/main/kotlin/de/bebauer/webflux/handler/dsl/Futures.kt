@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
  */
 data class Timeout(val value: Long, val unit: TimeUnit) {
     companion object {
-        fun of(duration: Duration) = Timeout(duration.toNanos(), TimeUnit.NANOSECONDS)
+        fun of(duration: Duration) = Timeout(TimeUnit.NANOSECONDS.convert(duration), TimeUnit.NANOSECONDS)
     }
 }
 
