@@ -22,6 +22,8 @@ Directives are the building blocks of this DSL.
 * [internalServerError](completions/internalServerError.md)
 * [notFound](completions/notFound.md)
 * [ok](completions/ok.md)
+* [onComplete](futures/onComplete.md)
+* [onSuccess](futures/onSuccess.md)
 * [parameter](parameters/parameter.md)
 * [parameters](parameters/parameters.md)
 * [pathVariable](pathvariables/pathvariable.md)
