@@ -20,8 +20,8 @@ fun Project.codeGenTestOutputDir(): File {
 open class CodeGen : DefaultTask() {
     @TaskAction
     fun generate() {
-        generateParameterDsl(project.codeGenOutputDir())
-        generatePathVariableDsl(project.codeGenOutputDir())
+        generateParameterDsl(project.codeGenOutputDir(), project.codeGenTestOutputDir())
+        generatePathVariableDsl(project.codeGenOutputDir(), project.codeGenTestOutputDir())
         generateStatusCompletions(project.codeGenOutputDir(), project.codeGenTestOutputDir())
     }
 }

@@ -4,11 +4,14 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
 
-internal fun generatePathVariableDsl(outputDir: File) {
+internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
     val fileBuilder = FileSpec.builder("de.bebauer.webflux.handler.dsl", "PathVariablesGenerated")
 
     val pathVariable = ClassName("de.bebauer.webflux.handler.dsl", "PathVariable")
     val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
+    val test = ClassName("org.junit.jupiter.api", "Test")
+
+    val testClass = TypeSpec.classBuilder("PathVariablesGeneratedTests")
 
     (2..10).forEach { i ->
         val functionBuilder = FunSpec.builder("pathVariables")
@@ -47,7 +50,36 @@ internal fun generatePathVariableDsl(outputDir: File) {
             )
 
         fileBuilder.addFunction(functionBuilder.build())
+
+        val testFunctionBuilder = FunSpec.builder("parameters should extract $i values")
+            .addAnnotation(test)
+            .addStatement(
+                """
+                |runHandlerTest(
+                |    handler {
+                |       pathVariables(${(1..i).map { "\"p$it\".intVar()" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
+                |           ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
+                |       }
+                |    },
+                |    {
+                |        expectStatus().isOk
+                |            .expectBodyList(Int::class.java).returnResult()
+                |            .apply { assertThat(responseBody).containsExactly(${(1..i).map { "$it" }.joinToString()}) }
+                |    },
+                |    route = { GET("/test/${(1..i).map { "{p$it}" }.joinToString("/")}", it) },
+                |    request = { get().uri("/test/${(1..i).joinToString("/")}") })
+                """.trimMargin()
+            )
+
+        testClass.addFunction(testFunctionBuilder.build())
     }
 
     fileBuilder.build().writeTo(outputDir)
+
+    FileSpec.builder("de.bebauer.webflux.handler.dsl", "PathVariablesGeneratedTests")
+        .addImport("org.assertj.core.api", "Assertions.assertThat")
+        .addImport("reactor.core.publisher", "Flux")
+        .addType(testClass.build())
+        .build()
+        .writeTo(testOutDir)
 }

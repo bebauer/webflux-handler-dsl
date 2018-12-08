@@ -5,11 +5,14 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
 import java.io.File
 
-internal fun generateParameterDsl(outputDir: File) {
+internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
     val fileBuilder = FileSpec.builder("de.bebauer.webflux.handler.dsl", "QueryParametersGenerated")
 
     val queryParam = ClassName("de.bebauer.webflux.handler.dsl", "QueryParameter")
     val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
+    val test = ClassName("org.junit.jupiter.api", "Test")
+
+    val testClass = TypeSpec.classBuilder("QueryParametersGeneratedTests")
 
     (2..10).forEach { i ->
         val functionBuilder = FunSpec.builder("parameters")
@@ -50,7 +53,35 @@ internal fun generateParameterDsl(outputDir: File) {
             )
 
         fileBuilder.addFunction(functionBuilder.build())
+
+        val testFunctionBuilder = FunSpec.builder("parameters should extract $i values")
+            .addAnnotation(test)
+            .addStatement(
+                """
+                |runHandlerTest(
+                |    handler {
+                |       parameters(${(1..i).map { "\"p$it\".intParam()" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
+                |           ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
+                |       }
+                |    },
+                |    {
+                |        expectStatus().isOk
+                |            .expectBodyList(Int::class.java).returnResult()
+                |            .apply { assertThat(responseBody).containsExactly(${(1..i).map { "$it" }.joinToString()}) }
+                |    },
+                |    request = { get().uri("/test?${(1..i).map { "p$it=$it" }.joinToString("&")}") })
+                """.trimMargin()
+            )
+
+        testClass.addFunction(testFunctionBuilder.build())
     }
 
     fileBuilder.build().writeTo(outputDir)
+
+    FileSpec.builder("de.bebauer.webflux.handler.dsl", "QueryParametersGeneratedTests")
+        .addImport("org.assertj.core.api", "Assertions.assertThat")
+        .addImport("reactor.core.publisher", "Flux")
+        .addType(testClass.build())
+        .build()
+        .writeTo(testOutDir)
 }
