@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import pl.allegro.tech.build.axion.release.domain.PredefinedVersionIncrementer
 import de.bebauer.webflux.handler.dsl.codegen.CodeGen
 import de.bebauer.webflux.handler.dsl.codegen.codeGenOutputDir
+import de.bebauer.webflux.handler.dsl.codegen.codeGenTestOutputDir
 import pl.allegro.tech.build.axion.release.domain.hooks.HookContext
 import pl.allegro.tech.build.axion.release.domain.hooks.HooksConfig
 
@@ -63,6 +64,10 @@ dependencies {
 
 sourceSets["main"].java {
     srcDir(codeGenOutputDir())
+}
+
+sourceSets["test"].java {
+    srcDir(codeGenTestOutputDir())
 }
 
 tasks.withType<Test> {

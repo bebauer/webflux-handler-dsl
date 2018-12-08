@@ -4,8 +4,11 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
 
-internal fun generateStatusCompletions(outputDir: File) {
-    val fileBuilder = FileSpec.builder("de.bebauer.webflux.handler.dsl", "StatusCompletionsGenerated")
+internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
+    val srcFileBuilder = FileSpec.builder("de.bebauer.webflux.handler.dsl", "StatusCompletionsGenerated")
+        .addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("\"UnassignedFluxMonoInstance\"").build())
+
+    val testClass = TypeSpec.classBuilder("StatusCompletionsGeneratedTests")
 
     val statusList =
         listOf("OK", "NOT_FOUND", "BAD_REQUEST", "FORBIDDEN", "INTERNAL_SERVER_ERROR", "UNAUTHORIZED", "CREATED")
@@ -18,9 +21,10 @@ internal fun generateStatusCompletions(outputDir: File) {
     val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
     val bodyInserter = ClassName("org.springframework.web.reactive.function", "BodyInserter")
     val serverHttpResponse = ClassName("org.springframework.http.server.reactive", "ServerHttpResponse")
+    val test = ClassName("org.junit.jupiter.api", "Test")
 
     fun generateWithBuilder(status: String) {
-        fileBuilder.addFunction(
+        srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
                 .receiver(handlerDsl)
                 .addParameter(
@@ -36,12 +40,52 @@ internal fun generateStatusCompletions(outputDir: File) {
                 .addStatement("return complete(%T.$status, init)", httpStatus)
                 .build()
         )
+
+        testClass.addFunction(
+            FunSpec.builder("${status.underscoreToCamelCase()} should complete without body")
+                .addAnnotation(test)
+                .addStatement(
+                    """
+                        runHandlerTest(
+                            handler {
+                                ${status.underscoreToCamelCase()}()
+                            },
+                            {
+                                expectStatus().${status.statusToCheck()}
+                                    .expectBody(String::class.java).returnResult()
+                                    .apply { assertThat(responseBody).isNullOrEmpty() }
+                            })
+                    """.trimIndent()
+                )
+                .build()
+        )
+
+        testClass.addFunction(
+            FunSpec.builder("${status.underscoreToCamelCase()} should complete with body builder")
+                .addAnnotation(test)
+                .addStatement(
+                    """
+                        runHandlerTest(
+                            handler {
+                                ${status.underscoreToCamelCase()} {
+                                    body(fromObject("test"))
+                                }
+                            },
+                            {
+                                expectStatus().${status.statusToCheck()}
+                                    .expectBody(String::class.java).returnResult()
+                                    .apply { assertThat(responseBody).isEqualTo("test") }
+                            })
+                    """.trimIndent()
+                )
+                .build()
+        )
     }
 
     fun generateWithFlux(status: String) {
         val typeT = TypeVariableName("T")
 
-        fileBuilder.addFunction(
+        srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
                 .addModifiers(KModifier.INLINE)
                 .addTypeVariable(typeT.copy(reified = true))
@@ -54,12 +98,31 @@ internal fun generateStatusCompletions(outputDir: File) {
                 .addStatement("return complete(%T.$status, flux)", httpStatus)
                 .build()
         )
+
+        testClass.addFunction(
+            FunSpec.builder("${status.underscoreToCamelCase()} should complete with flux")
+                .addAnnotation(test)
+                .addStatement(
+                    """
+                        runHandlerTest(
+                            handler {
+                                ${status.underscoreToCamelCase()}(Flux.fromIterable(listOf(1, 2, 3)))
+                            },
+                            {
+                                expectStatus().${status.statusToCheck()}
+                                    .expectBodyList(Int::class.java).returnResult()
+                                    .apply { assertThat(responseBody).containsExactly(1, 2, 3) }
+                            })
+                    """.trimIndent()
+                )
+                .build()
+        )
     }
 
     fun generateWithMono(status: String) {
         val typeT = TypeVariableName("T")
 
-        fileBuilder.addFunction(
+        srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
                 .addModifiers(KModifier.INLINE)
                 .addTypeVariable(typeT.copy(reified = true))
@@ -72,12 +135,31 @@ internal fun generateStatusCompletions(outputDir: File) {
                 .addStatement("return complete(%T.$status, mono)", httpStatus)
                 .build()
         )
+
+        testClass.addFunction(
+            FunSpec.builder("${status.underscoreToCamelCase()} should complete with mono")
+                .addAnnotation(test)
+                .addStatement(
+                    """
+                        runHandlerTest(
+                            handler {
+                                ${status.underscoreToCamelCase()}(Mono.just(123))
+                            },
+                            {
+                                expectStatus().${status.statusToCheck()}
+                                    .expectBody(Int::class.java).returnResult()
+                                    .apply { assertThat(responseBody).isEqualTo(123) }
+                            })
+                    """.trimIndent()
+                )
+                .build()
+        )
     }
 
     fun generateWithValue(status: String) {
         val typeT = TypeVariableName("T")
 
-        fileBuilder.addFunction(
+        srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
                 .addModifiers(KModifier.INLINE)
                 .addTypeVariable(typeT.copy(reified = true))
@@ -90,21 +172,59 @@ internal fun generateStatusCompletions(outputDir: File) {
                 .addStatement("return complete(%T.$status, value)", httpStatus)
                 .build()
         )
+
+        testClass.addFunction(
+            FunSpec.builder("${status.underscoreToCamelCase()} should complete with value")
+                .addAnnotation(test)
+                .addStatement(
+                    """
+                        runHandlerTest(
+                            handler {
+                                ${status.underscoreToCamelCase()}("123")
+                            },
+                            {
+                                expectStatus().${status.statusToCheck()}
+                                    .expectBody(String::class.java).returnResult()
+                                    .apply { assertThat(responseBody).isEqualTo("123") }
+                            })
+                    """.trimIndent()
+                )
+                .build()
+        )
     }
 
     fun generateWithBodyInserter(status: String) {
-        fileBuilder.addFunction(
+        srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
                 .receiver(handlerDsl)
                 .addParameter(
                     "inserter",
                     bodyInserter.parameterizedBy(
                         STAR,
-                        TypeVariableName(serverHttpResponse.canonicalName, KModifier.IN)
+                        WildcardTypeName.consumerOf(serverHttpResponse)
                     )
                 )
                 .returns(completeOperation)
                 .addStatement("return complete(%T.$status, inserter)", httpStatus)
+                .build()
+        )
+
+        testClass.addFunction(
+            FunSpec.builder("${status.underscoreToCamelCase()} should complete with body inserter")
+                .addAnnotation(test)
+                .addStatement(
+                    """
+                        runHandlerTest(
+                            handler {
+                                ${status.underscoreToCamelCase()}(fromObject("123"))
+                            },
+                            {
+                                expectStatus().${status.statusToCheck()}
+                                    .expectBody(String::class.java).returnResult()
+                                    .apply { assertThat(responseBody).isEqualTo("123") }
+                            })
+                    """.trimIndent()
+                )
                 .build()
         )
     }
@@ -117,9 +237,25 @@ internal fun generateStatusCompletions(outputDir: File) {
         generateWithBodyInserter(status)
     }
 
-    fileBuilder.build().writeTo(outputDir)
+    srcFileBuilder.build().writeTo(outputDir)
+
+    FileSpec.builder("de.bebauer.webflux.handler.dsl", "StatusCompletionsGeneratedTests")
+        .addImport("org.assertj.core.api", "Assertions.assertThat")
+        .addImport("org.springframework.web.reactive.function", "BodyInserters.fromObject")
+        .addImport("reactor.core.publisher", "Flux")
+        .addImport("reactor.core.publisher", "Mono")
+        .addType(testClass.build())
+        .build()
+        .writeTo(testOutDir)
 }
 
 private fun String.underscoreToCamelCase() = "_([a-z\\d])".toRegex().replace(this.toLowerCase()) { m ->
     m.groups[1]?.value?.toUpperCase()!!
 }
+
+private fun String.firstToUpper() = this[0].toUpperCase() + this.substring(1)
+
+private fun String.statusToCheck() = "is${when (this) {
+    "INTERNAL_SERVER_ERROR" -> "5xx_SERVER_ERROR"
+    else -> this
+}.underscoreToCamelCase().firstToUpper()}"
