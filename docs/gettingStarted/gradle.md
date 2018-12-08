@@ -4,9 +4,7 @@
 
 ```groovy
 repositories {
-    maven {
-      url 'https://dl.bintray.com/bebauer/maven'
-    }
+    jcenter()
 }
 
 dependencies {
@@ -18,9 +16,7 @@ dependencies {
 
 ```kotlin
 repositories {
-    maven {
-      url = uri("https://dl.bintray.com/bebauer/maven")
-    }
+    jcenter()
 }
 
 dependencies {

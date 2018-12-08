@@ -2,7 +2,8 @@
 
 ## Webflux Handler DSL
 
-[![Build Status](https://travis-ci.org/bebauer/webflux-handler-dsl.svg?branch=master)](https://travis-ci.org/bebauer/gcloud-scala) [![Download](https://api.bintray.com/packages/bebauer/maven/webflux-handler-dsl/images/download.svg) ](https://bintray.com/bebauer/maven/webflux-handler-dsl/_latestVersion)
+[![Build Status](https://travis-ci.org/bebauer/webflux-handler-dsl.svg?branch=master)](https://travis-ci.org/bebauer/gcloud-scala)
+[ ![Download](https://api.bintray.com/packages/bebauer/maven/webflux-handler-dsl/images/download.svg) ](https://bintray.com/bebauer/maven/webflux-handler-dsl/_latestVersion)
 
 This library provides a Kotlin DSL for building Spring Webflux handlers.
 
@@ -13,20 +14,8 @@ This library provides a Kotlin DSL for building Spring Webflux handlers.
 #### Repository
 
 ```text
-Groovy:
-
 repositories {
-    maven {
-      url 'https://dl.bintray.com/bebauer/maven'
-    }
-}
-
-Kotlin:
-
-repositories {
-    maven {
-      url = uri("https://dl.bintray.com/bebauer/maven")
-    }
+    jcenter()
 }
 ```
 
@@ -48,8 +37,12 @@ implementation("de.bebauer:webflux-handler-dsl:0.11.0")
 
 ```xml
 <repository>
-  <id>bintray-bebauer</id>
-  <url>https://dl.bintray.com/bebauer/maven</url>
+  <snapshots>
+    <enabled>false</enabled>
+  </snapshots>
+  <id>central</id>
+  <name>bintray</name>
+  <url>https://jcenter.bintray.com</url>
 </repository>
 ```
 

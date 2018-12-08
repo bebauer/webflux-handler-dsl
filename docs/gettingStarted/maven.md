@@ -4,8 +4,12 @@
 
 ```xml
 <repository>
-  <id>bintray-bebauer</id>
-  <url>https://dl.bintray.com/bebauer/maven</url>
+  <snapshots>
+    <enabled>false</enabled>
+  </snapshots>
+  <id>central</id>
+  <name>bintray</name>
+  <url>https://jcenter.bintray.com</url>
 </repository>
 ```
 
