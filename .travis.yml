@@ -7,7 +7,16 @@ before_cache:
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+    - "$HOME/.gradle/caches/"
+    - "$HOME/.gradle/wrapper/"
 script:
-  - ./gradlew check
+  - "./gradlew check"
+deploy:
+  provider: releases
+  api_key:
+    secure: cMT4OuuCOxtr8ZNWVGhvdx0f7SixI1Hb0y37mH0F/TXUJl0d220edUBQcKUTYJsGZrBLGkawEJdwYMvh9MqtbK/k05wj7tlKNA/Cl2ae5S+cRnjk+J8aeVx3jpAbzPy1B/HCvDQ6QO2tXEPyfVDjDHsp6QPAOm7Z2DBS5ONbiq++BVVj9XgzNiidNbwktHFyXe33r07OR/5VgGWXrO3v88QGtUNk6Pa2yzjdF16Q85+DlBjrLANmUYstPtP4/0wD2wt3Mw1hM1NY5D5Xh0GmQDlMiYNckhA+ob/QR+ziQgsXldnk2A6pX8zUqTcUpy7I1a0QWdVlWWZ7QLFMTqoO64+FAItvAAB9W4ndz+cNe5ThhpoixgklQgV4DPPzKv+UueDi8iLCu3Y22zsBtuA8f/ZvaT+LU/97Dcpimmdn/VRlm4LpKvzHpRWNozIrEQ5xZV0dTbVG8nks2XDxG7g6u0xD7lky0wBnQmxTiQdXvtMA1CqCGpQeJbsJis4p7ZhCyobSyWhWgnWrGeiBQLFEjMjRUKGKIxN+in2o3y20Qm+qE/S8F/MdRtnMO+pQnIlj3mUFrlFF2FRHoA80MzNRw4vMj+8nWoPpHknsgRmt0EeUKzF+rj7dJmk1im1D+/etpdOw1VPBO22VcJKewrkavIe0qvwW2c03k816MIWLy+E=
+  file: build/libs/*.jar
+  file_glob: true
+  skip_cleanup: true
+  on:
+    tags: true
