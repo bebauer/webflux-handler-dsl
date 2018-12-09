@@ -57,7 +57,7 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
                 """
                 |runHandlerTest(
                 |    handler {
-                |       pathVariables(${(1..i).map { "\"p$it\".intVar()" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
+                |       pathVariables(${(1..i).map { "\"p$it\".intVar" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
                 |           ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
                 |       }
                 |    },

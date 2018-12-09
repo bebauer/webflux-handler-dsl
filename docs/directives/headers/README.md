@@ -10,15 +10,15 @@ The arguments for the directives expect a `HeaderName` instance.
 Those instances can and should be created through String extensions. 
 This way the header value will be converted into the correct type.
 
-### Provided Extension Methods
+### Provided Extension Methods / Properties
 
 * header\(converter\)
-* rawHeader\(\)
-* stringHeader\(\)
+* rawHeader
+* stringHeader
 
 All but `rawHeader` extract all header values as a list. 
-But with the `single()` method only the first value with be extracted.
-Also it is possible to define a header as optional with the `optional()` method.
+But with the `single` property only the first value with be extracted.
+Also it is possible to define a header as optional with the `optional` property.
 Then the extracted value will be of type `Optional<T>`.
 
 ### Example
@@ -30,29 +30,29 @@ Then the extracted value will be of type `Optional<T>`.
 ### Single Value Extraction
 
 ```kotlin
-"myHeader".stringHeader().single() // will extract a String
+"myHeader".stringHeader.single // will extract a String
 ```
 
 ### Optional Header
 
 ```kotlin
-"myHeader".stringHeader().optional() // will extract a Option<List<String>>
+"myHeader".stringHeader.optional // will extract a Option<List<String>>
 ```
 
 ### Single Optional Header
 
 ```kotlin
-"myHeader".stringHeader().single().optional() // will extract a Option<String>
+"myHeader".stringHeader.single.optional // will extract a Option<String>
 ```
 
 ### Optional Header with Default Value
 
 ```kotlin
-"myHeader".stringHeader().optional("abc") // will extract a List<String>
+"myHeader".stringHeader.optional("abc") // will extract a List<String>
 ```
 
 ### Single Optional Header with Default Value
 
 ```kotlin
-"myHeader".stringHeader().single().optional("abc") // will extract a String
+"myHeader".stringHeader.single.optional("abc") // will extract a String
 ```

@@ -48,17 +48,18 @@ fun <T> String.queryParam(converter: (String) -> T): QueryParameter<T, T> =
  * @param T the type of the parameter
  * @param U type of a single parameter
  */
-fun <T, U> QueryParameter<T, U>.optional(): QueryParameter<Option<T>, U> =
-    QueryParameter(
-        this.name,
-        this.converter,
-        {
-            val value = this.valueExtractor(it)
-            when (value) {
-                is Either.Left -> Right(None)
-                is Either.Right -> value.map(::Some)
-            }
-        })
+val <T, U> QueryParameter<T, U>.optional
+    get(): QueryParameter<Option<T>, U> =
+        QueryParameter(
+            this.name,
+            this.converter,
+            {
+                val value = this.valueExtractor(it)
+                when (value) {
+                    is Either.Left -> Right(None)
+                    is Either.Right -> value.map(::Some)
+                }
+            })
 
 /**
  * Makes a [QueryParameter] optional.
@@ -84,87 +85,107 @@ fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> 
  *
  * @param T the type of the parameter
  */
-fun <T> QueryParameter<T, T>.repeated(): QueryParameter<List<T>, T> =
-    QueryParameter(this.name, this.converter, {
-        when (it) {
-            is Some -> Right(it.t.map(converter))
-            is None -> Left(ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required query parameter $name."))
-        }
-    })
+val <T> QueryParameter<T, T>.repeated
+    get(): QueryParameter<List<T>, T> =
+        QueryParameter(this.name, this.converter, {
+            when (it) {
+                is Some -> Right(it.t.map(converter))
+                is None -> Left(
+                    ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Missing required query parameter $name."
+                    )
+                )
+            }
+        })
 
 /**
  * Creates a [String] extracting [QueryParameter].
  */
-fun String.stringParam() = this.queryParam { it }
+val String.stringParam
+    get() = this.queryParam { it }
 
 /**
  * Creates a [Int] extracting [QueryParameter].
  */
-fun String.intParam() = this.queryParam(String::toInt)
+val String.intParam
+    get() = this.queryParam(String::toInt)
 
 /**
  * Creates a [Double] extracting [QueryParameter].
  */
-fun String.doubleParam() = this.queryParam(String::toDouble)
+val String.doubleParam
+    get() = this.queryParam(String::toDouble)
 
 /**
  * Creates a [java.math.BigDecimal] extracting [QueryParameter].
  */
-fun String.bigDecimalParam() = this.queryParam(String::toBigDecimal)
+val String.bigDecimalParam
+    get() = this.queryParam(String::toBigDecimal)
 
 /**
  * Creates a [java.math.BigInteger] extracting [QueryParameter].
  */
-fun String.bigIntegerParam() = this.queryParam(String::toBigInteger)
+val String.bigIntegerParam
+    get() = this.queryParam(String::toBigInteger)
 
 /**
  * Creates a [Boolean] extracting [QueryParameter].
  */
-fun String.booleanParam() = this.queryParam(String::toBoolean)
+val String.booleanParam
+    get() = this.queryParam(String::toBoolean)
 
 /**
  * Creates a [Byte] extracting [QueryParameter].
  */
-fun String.byteParam() = this.queryParam(String::toByte)
+val String.byteParam
+    get() = this.queryParam(String::toByte)
 
 /**
  * Creates a [Float] extracting [QueryParameter].
  */
-fun String.floatParam() = this.queryParam(String::toFloat)
+val String.floatParam
+    get() = this.queryParam(String::toFloat)
 
 /**
  * Creates a [Long] extracting [QueryParameter].
  */
-fun String.longParam() = this.queryParam(String::toLong)
+val String.longParam
+    get() = this.queryParam(String::toLong)
 
 /**
  * Creates a [Short] extracting [QueryParameter].
  */
-fun String.shortParam() = this.queryParam(String::toShort)
+val String.shortParam
+    get() = this.queryParam(String::toShort)
 
 /**
  * Creates a [UByte] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-fun String.uByteParam() = this.queryParam(String::toUByte)
+val String.uByteParam
+    get() = this.queryParam(String::toUByte)
 
 /**
  * Creates a [UInt] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-fun String.uIntParam() = this.queryParam(String::toUInt)
+val String.uIntParam
+    get() = this.queryParam(String::toUInt)
 
 /**
  * Creates a [ULong] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-fun String.uLongParam() = this.queryParam(String::toULong)
+val String.uLongParam
+    get() = this.queryParam(String::toULong)
 
 /**
  * Creates a [UShort] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-fun String.uShortParam() = this.queryParam(String::toUShort)
+val String.uShortParam
+    get() = this.queryParam(String::toUShort)
 
 /**
  * Creates a query parameter that extracts comma separated values.
@@ -179,7 +200,8 @@ fun <T> String.csvParam(converter: (String) -> T): QueryParameter<List<T>, List<
 /**
  * Creates a query parameter that extracts comma separated [String] values.
  */
-fun String.csvParam() = this.csvParam { it }
+val String.csvParam
+    get() = this.csvParam { it }
 
 /**
  * Extracts query parameters from the [org.springframework.web.reactive.function.server.ServerRequest].

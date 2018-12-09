@@ -9,7 +9,7 @@ class CookiesTests {
     fun `required cookie set`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie()) { (test) ->
+                cookie("test".stringCookie) { (test) ->
                     complete(test)
                 }
             },
@@ -24,7 +24,7 @@ class CookiesTests {
     fun `required cookie missing`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie()) { (test) ->
+                cookie("test".stringCookie) { (test) ->
                     complete(test)
                 }
             },
@@ -35,7 +35,7 @@ class CookiesTests {
     fun `optional cookie set`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().optional()) { test ->
+                cookie("test".stringCookie.optional) { test ->
                     complete(test.toString())
                 }
             },
@@ -50,7 +50,7 @@ class CookiesTests {
     fun `optional cookie missing`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().optional()) { test ->
+                cookie("test".stringCookie.optional) { test ->
                     complete(test.toString())
                 }
             },
@@ -64,7 +64,7 @@ class CookiesTests {
     fun `optional cookie with default set`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().optional(listOf("abc"))) { (test) ->
+                cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
                     complete(test)
                 }
             },
@@ -79,7 +79,7 @@ class CookiesTests {
     fun `optional cookie with default missing`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().optional(listOf("abc"))) { (test) ->
+                cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
                     complete(test)
                 }
             },
@@ -93,7 +93,7 @@ class CookiesTests {
     fun `single cookie set`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().single()) { test ->
+                cookie("test".stringCookie.single) { test ->
                     complete(test)
                 }
             },
@@ -108,7 +108,7 @@ class CookiesTests {
     fun `single cookie missing`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().single()) { test ->
+                cookie("test".stringCookie.single) { test ->
                     complete(test)
                 }
             },
@@ -121,7 +121,7 @@ class CookiesTests {
     fun `single optional cookie set`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().single().optional()) { test ->
+                cookie("test".stringCookie.single.optional) { test ->
                     complete(test.toString())
                 }
             },
@@ -136,7 +136,7 @@ class CookiesTests {
     fun `single optional cookie missing`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().single().optional()) { test ->
+                cookie("test".stringCookie.single.optional) { test ->
                     complete(test.toString())
                 }
             },
@@ -150,7 +150,7 @@ class CookiesTests {
     fun `single optional cookie with default set`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().single().optional("abc")) { test ->
+                cookie("test".stringCookie.single.optional("abc")) { test ->
                     complete(test)
                 }
             },
@@ -165,7 +165,7 @@ class CookiesTests {
     fun `single optional cookie with default missing`() {
         runHandlerTest(
             handler {
-                cookie("test".stringCookie().single().optional("abc")) { test ->
+                cookie("test".stringCookie.single.optional("abc")) { test ->
                     complete(test)
                 }
             },

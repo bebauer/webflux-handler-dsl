@@ -60,7 +60,7 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
                 """
                 |runHandlerTest(
                 |    handler {
-                |       parameters(${(1..i).map { "\"p$it\".intParam()" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
+                |       parameters(${(1..i).map { "\"p$it\".intParam" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
                 |           ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
                 |       }
                 |    },

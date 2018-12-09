@@ -11,28 +11,28 @@ The arguments for the directives expect a `PathVariable` instance.
 Those instances can and should be created through String extensions. 
 This way the path variable will be converted into the correct type.
 
-### Provided Extension Methods
+### Provided Extension Methods / Properties
 
 * pathVariable\(converter\)
-* stringVar\(\)
-* booleanVar\(\)
-* byteVar\(\)
-* shortVar\(\)
-* intVar\(\)
-* longVar\(\)
-* bigIntegerVar\(\)
-* floatVar\(\)
-* doubleVar\(\)
-* bigDecimalVar\(\)
-* uByteVar\(\)
-* uShortVar\(\)
-* uIntVar\(\)
-* uLongVar\(\)
+* stringVar
+* booleanVar
+* byteVar
+* shortVar
+* intVar
+* longVar
+* bigIntegerVar
+* floatVar
+* doubleVar
+* bigDecimalVar
+* uByteVar
+* uShortVar
+* uIntVar
+* uLongVar
 
 ### Example
 
 ```kotlin
-"id".longVar() // creates PathVariable<Long> instance for the "id" variable
+"id".longVar // creates PathVariable<Long> instance for the "id" variable
 ```
 
 ## Extending the DSL

@@ -20,14 +20,14 @@ class QueryParametersTests {
         val router = router {
             GET("/blah", handler {
                 parameters(
-                    "v1".stringParam(),
-                    "v2".stringParam().optional(),
-                    "v3".intParam(),
-                    "v4".intParam().optional(),
-                    "v5".stringParam().optional("default"),
-                    "v6".intParam().repeated(),
-                    "v7".intParam().repeated().optional(),
-                    "v8".intParam().repeated().optional(
+                    "v1".stringParam,
+                    "v2".stringParam.optional,
+                    "v3".intParam,
+                    "v4".intParam.optional,
+                    "v5".stringParam.optional("default"),
+                    "v6".intParam.repeated,
+                    "v7".intParam.repeated.optional,
+                    "v8".intParam.repeated.optional(
                         listOf(9, 8, 7)
                     )
                 ) { v1, v2, v3, v4, v5, v6, v7, v8 ->
@@ -78,7 +78,7 @@ class QueryParametersTests {
     fun `csvParam should handle string lists`() {
         val router = router {
             GET("/blah", handler {
-                parameter("test".csvParam()) { test ->
+                parameter("test".csvParam) { test ->
                     complete {
                         contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
                     }
@@ -232,13 +232,13 @@ class QueryParametersTests {
     ) {
         val testConfig = when (testMode) {
             TestMode.DEFAULT -> "test".parameter() to value
-            TestMode.REPEATED -> "test".parameter().repeated() to listOf(value)
-            TestMode.OPTIONAL_SET -> "test".parameter().optional() to Some(value)
-            TestMode.OPTIONAL_MISSING -> "test".parameter().optional() to None
+            TestMode.REPEATED -> "test".parameter().repeated to listOf(value)
+            TestMode.OPTIONAL_SET -> "test".parameter().optional to Some(value)
+            TestMode.OPTIONAL_MISSING -> "test".parameter().optional to None
             TestMode.OPTIONAL_MISSING_DEFAULT -> "test".parameter().optional(value) to value
-            TestMode.OPTIONAL_REPEATED_SET -> "test".parameter().repeated().optional() to Some(listOf(value))
-            TestMode.OPTIONAL_REPEATED_MISSING -> "test".parameter().repeated().optional() to None
-            TestMode.OPTIONAL_REPEATED_MISSING_DEFAULT -> "test".parameter().repeated().optional(listOf(value)) to listOf(
+            TestMode.OPTIONAL_REPEATED_SET -> "test".parameter().repeated.optional to Some(listOf(value))
+            TestMode.OPTIONAL_REPEATED_MISSING -> "test".parameter().repeated.optional to None
+            TestMode.OPTIONAL_REPEATED_MISSING_DEFAULT -> "test".parameter().repeated.optional(listOf(value)) to listOf(
                 value
             )
         }

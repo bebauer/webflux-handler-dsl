@@ -34,9 +34,9 @@ See [Query Parameters](README.md) for a description of how to build `QueryParame
 router {
     GET("/", handler {
         parameters(
-            "query".stringParam(), 
-            "from".intParam().optional(0), 
-            "size".intParam().optional(10)) { query, from, size ->
+            "query".stringParam, 
+            "from".intParam.optional(0), 
+            "size".intParam.optional(10)) { query, from, size ->
             complete(repo.findByQuery(query, from, size))
         }
     })

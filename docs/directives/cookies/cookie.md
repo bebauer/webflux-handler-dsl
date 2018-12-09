@@ -17,7 +17,7 @@ Extracts cookie values from a `ServerRequest`. See [Cookies](README.md) for how 
 ```kotlin
 router {
     GET("/", handler {
-        cookie("SESSION_ID".stringCookie().single()) { sessionId ->
+        cookie("SESSION_ID".stringCookie.single) { sessionId ->
             complete(repo.findSessionById(sessionId))
         }
     })

@@ -20,7 +20,7 @@ instances.
 // required parameter
 router {
     GET("/", handler {
-        parameter("query".stringParam()) { query ->
+        parameter("query".stringParam) { query ->
             complete(repo.findByQuery(query))
         }
     })
@@ -29,7 +29,7 @@ router {
 // optional parameter
 router {
     GET("/", handler {
-        parameter("query".stringParam().optional()) { query ->
+        parameter("query".stringParam.optional) { query ->
             query.map {
                 complete(repo.findByQuery(it))
             }.orElse {
@@ -42,7 +42,7 @@ router {
 // optional parameter with default
 router {
     GET("/", handler {
-        parameter("query".stringParam().optional("*")) { query ->
+        parameter("query".stringParam.optional("*")) { query ->
             complete(repo.findByQuery(query))
         }
     })
@@ -51,7 +51,7 @@ router {
 // repeated parameter
 router {
     GET("/", handler {
-        parameter("query".stringParam().repeated()) { queries ->
+        parameter("query".stringParam.repeated) { queries ->
             complete(Flux.fromIterable(queries).flatMap { 
                 repo.findByQuery(it) 
             })
@@ -62,7 +62,7 @@ router {
 // repeated optional parameter
 router {
     GET("/", handler {
-        parameter("query".stringParam().repeated().optional()) { queries ->
+        parameter("query".stringParam.repeated.optional) { queries ->
             queries.map {
                 complete(Flux.fromIterable(it).flatMap { 
                     repo.findByQuery(it) 
@@ -77,8 +77,8 @@ router {
 // repeated optional parameter with default
 router {
     GET("/", handler {
-        parameter("query".stringParam()
-                         .repeated()
+        parameter("query".stringParam
+                         .repeated
                          .optional(listOf("1", "2"))
         ) { queries ->
             complete(Flux.fromIterable(queries).flatMap { 
