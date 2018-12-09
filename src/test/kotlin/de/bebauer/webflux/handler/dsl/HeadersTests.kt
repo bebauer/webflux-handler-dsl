@@ -142,7 +142,7 @@ class HeadersTests {
 
     @Test
     fun `raw header`() {
-        testHeader("test".rawHeader(), "a, b", "a", "b")
+        testHeader("test".rawHeader, "a, b", "a", "b")
     }
 
     @ParameterizedTest
@@ -151,14 +151,14 @@ class HeadersTests {
         val (header, expected, value) = arg
 
         testHeader(header, listOf(expected).toString(), value)
-        testHeader(header.single(), expected.toString(), value)
+        testHeader(header.single, expected.toString(), value)
     }
 
     @Test
     fun `optional header value set`() {
         val router = router {
             GET("/test", handler {
-                headerValue(Headers.Accept.single().optional()) { accept ->
+                headerValue(Headers.Accept.single.optional) { accept ->
                     complete {
                         body(BodyInserters.fromObject(accept.toString()))
                     }
@@ -176,7 +176,7 @@ class HeadersTests {
     fun `optional header value missing`() {
         val router = router {
             GET("/test", handler {
-                headerValue(Headers.AccessControlMaxAge.single().optional()) { accept ->
+                headerValue(Headers.AccessControlMaxAge.single.optional) { accept ->
                     complete {
                         body(BodyInserters.fromObject(accept.toString()))
                     }
@@ -194,7 +194,7 @@ class HeadersTests {
     fun `optional header value missing with default`() {
         val router = router {
             GET("/test", handler {
-                headerValue(Headers.AccessControlMaxAge.single().optional("xxx")) { accept ->
+                headerValue(Headers.AccessControlMaxAge.single.optional("xxx")) { accept ->
                     complete {
                         body(BodyInserters.fromObject(accept))
                     }
@@ -212,7 +212,7 @@ class HeadersTests {
     fun `required header value missing`() {
         val router = router {
             GET("/test", handler {
-                headerValue(Headers.AccessControlMaxAge.single()) { accept ->
+                headerValue(Headers.AccessControlMaxAge.single) { accept ->
                     complete {
                         body(BodyInserters.fromObject(accept))
                     }

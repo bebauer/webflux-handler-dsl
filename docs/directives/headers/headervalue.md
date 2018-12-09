@@ -19,7 +19,7 @@ The `de.bebauer.webflux.handler.dsl.Headers` object contains constants for all c
 // with constant
 router {
     GET("/", handler {
-        headerValue(Headers.Location.single()) { location ->
+        headerValue(Headers.Location.single) { location ->
             complete(repo.findByLocation(location))
         }
     })
@@ -28,7 +28,7 @@ router {
 // without constant
 router {
     GET("/", handler {
-        headerValue("location".stringHeader().single()) { location ->
+        headerValue("location".stringHeader.single) { location ->
             complete(repo.findByLocation(location))
         }
     })

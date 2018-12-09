@@ -30,7 +30,7 @@ Extracts path variables from the `ServerRequest`.
 ```kotlin
 router {
     GET("/topics/{tid}/posts/{pid}", handler {
-        pathVariables("tid".intVar(), "pid".stringVar()) { tid, pid ->
+        pathVariables("tid".intVar, "pid".stringVar) { tid, pid ->
             complete(repo.findByTopicAndPostId(tid, pid))
         }
     })

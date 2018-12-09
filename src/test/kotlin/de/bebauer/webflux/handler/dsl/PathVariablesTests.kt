@@ -94,9 +94,9 @@ class PathVariablesTests {
         runHandlerTest(
             handler {
                 pathVariables(
-                    "test1".intVar(),
-                    "test2".stringVar(),
-                    "test3".stringVar()
+                    "test1".intVar,
+                    "test2".stringVar,
+                    "test3".stringVar
                 ) { test1, test2, test3 ->
                     complete {
                         contentType(MediaType.APPLICATION_JSON)
@@ -118,7 +118,7 @@ class PathVariablesTests {
     fun `failed to parse`() {
         runHandlerTest(
             handler {
-                pathVariables("test".intVar()) { test ->
+                pathVariables("test".intVar) { test ->
                     complete(test)
                 }
             },

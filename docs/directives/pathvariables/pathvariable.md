@@ -17,7 +17,7 @@ Extracts a path variable from the `ServerRequest`. See [pathVariables](pathvaria
 ```kotlin
 router {
     GET("/{id}", handler {
-        pathVariable("id".intVar()) { id ->
+        pathVariable("id".intVar) { id ->
             complete(repo.findById(id))
         }
     })

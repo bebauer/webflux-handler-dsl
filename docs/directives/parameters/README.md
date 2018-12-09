@@ -10,49 +10,49 @@
 The arguments for the directives expect a QueryParameter instance. 
 Those instances can and should be created through String extensions.
 
-### Provided Extension Methods
+### Provided Extension Methods / Properties
 
 * queryParam\(converter\)
-* stringParam\(\)
-* booleanParam\(\)
-* byteParam\(\)
-* shortParam\(\)
-* intParam\(\)
-* longParam\(\)
-* bigIntegerParam\(\)
-* floatParam\(\)
-* doubleParam\(\)
-* bigDecimalParam\(\)
-* uByteParam\(\)
-* uShortParam\(\)
-* uIntParam\(\)
-* uLongParam\(\)
-* csvParam\(\)
+* stringParam
+* booleanParam
+* byteParam
+* shortParam
+* intParam
+* longParam
+* bigIntegerParam
+* floatParam
+* doubleParam
+* bigDecimalParam
+* uByteParam
+* uShortParam
+* uIntParam
+* uLongParam
+* csvParam
 * csvParam\(converter\)
 
 ### Example
 
 ```kotlin
-"query".stringParam() // creates QueryParameter<String, String> instance for the "query" parameter
+"query".stringParam // creates QueryParameter<String, String> instance for the "query" parameter
 ```
 
 ### Repeated Parameters
 
 Query parameters can appear more than once in an url. By default only the first parameter will be extracted.
-To get all specified parameter use the `repeated` extension method.
+To get all specified parameter use the `repeated` extension property.
 
 ```kotlin
-"query".stringParam().repeated()
+"query".stringParam.repeated
 ```
 
 This will extract a `List<T>`. 
 
 ### Optional Parameters
 
-Query parameters can also be defined as optional. To do this use the `optional` extension method.
+Query parameters can also be defined as optional. To do this use the `optional` extension method / property.
 
 ```kotlin
-"query".stringParam().optional()
+"query".stringParam.optional
 ```
 
 This will extract an `Option<T>`.
@@ -60,7 +60,7 @@ This will extract an `Option<T>`.
 A default value can also be specified. In this case `T` will be extracted an not `Option<T>`.
 
 ```kotlin
-"query".stringParam().optional("default")
+"query".stringParam.optional("default")
 ```
 
 ### Repeated Optional Parameters
@@ -68,24 +68,24 @@ A default value can also be specified. In this case `T` will be extracted an not
 `optional` can also be combined with `repeated`, but `repeated` has to be called before.
 
 ```kotlin
-"query".stringParam().repeated().optional()
+"query".stringParam.repeated.optional
 ```
 
 or
 
 ```kotlin
-"query".stringParam().repeated().optional(listOf("default"))
+"query".stringParam.repeated.optional(listOf("default"))
 ```
 
 ### CSV Parameters
 
-CSV parameters `(e.g. ?param=a,b,c)` can be extracted with the `csvParam` extension method. The extracted parameter
-will be of the type `List<String>`.
+CSV parameters `(e.g. ?param=a,b,c)` can be extracted with the `csvParam` extension method / property. 
+The extracted parameter will be of the type `List<String>`.
 
 ## Extending the DSL
 
 The DSL can be easily extended to provide custom converters for query parameters by utilizing the `queryParam` or
-`csvParam` String extension functions, which accept a custom converter as parameter.
+`csvParam` String extensions, which accept a custom converter as parameter.
 
 ```kotlin
 fun String.myParam() = this.queryParam { stringValue -> MyObject(stringValue) }

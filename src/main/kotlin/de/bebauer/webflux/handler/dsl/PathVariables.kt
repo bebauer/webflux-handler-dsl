@@ -26,76 +26,90 @@ fun <T> String.pathVariable(converter: (String) -> T) = PathVariable(this, conve
 /**
  * Creates a [String] path variable from a [String].
  */
-fun String.stringVar() = this.pathVariable { it }
+val String.stringVar
+    get() = this.pathVariable { it }
 
 /**
  * Creates a [Int] path variable from a [String].
  */
-fun String.intVar() = this.pathVariable(String::toInt)
+val String.intVar
+    get() = this.pathVariable(String::toInt)
 
 /**
  * Creates a [Double] path variable from a [String].
  */
-fun String.doubleVar() = this.pathVariable(String::toDouble)
+val String.doubleVar
+    get() = this.pathVariable(String::toDouble)
 
 /**
  * Creates a [java.math.BigDecimal] path variable from a [String].
  */
-fun String.bigDecimalVar() = this.pathVariable(String::toBigDecimal)
+val String.bigDecimalVar
+    get() = this.pathVariable(String::toBigDecimal)
 
 /**
  * Creates a [java.math.BigInteger] path variable from a [String].
  */
-fun String.bigIntegerVar() = this.pathVariable(String::toBigInteger)
+val String.bigIntegerVar
+    get() = this.pathVariable(String::toBigInteger)
 
 /**
  * Creates a [Boolean] path variable from a [String].
  */
-fun String.booleanVar() = this.pathVariable(String::toBoolean)
+val String.booleanVar
+    get() = this.pathVariable(String::toBoolean)
 
 /**
  * Creates a [Byte] path variable from a [String].
  */
-fun String.byteVar() = this.pathVariable(String::toByte)
+val String.byteVar
+    get() = this.pathVariable(String::toByte)
 
 /**
  * Creates a [Float] path variable from a [String].
  */
-fun String.floatVar() = this.pathVariable(String::toFloat)
+val String.floatVar
+    get() = this.pathVariable(String::toFloat)
 
 /**
  * Creates a [Long] path variable from a [String].
  */
-fun String.longVar() = this.pathVariable(String::toLong)
+val String.longVar
+    get() = this.pathVariable(String::toLong)
 
 /**
  * Creates a [Short] path variable from a [String].
  */
-fun String.shortVar() = this.pathVariable(String::toShort)
+val String.shortVar
+    get() = this.pathVariable(String::toShort)
 
 /**
  * Creates a [UByte] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-fun String.uByteVar() = this.pathVariable(String::toUByte)
+val String.uByteVar
+    get() = this.pathVariable(String::toUByte)
 
 /**
  * Creates a [UInt] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-fun String.uIntVar() = this.pathVariable(String::toUInt)
+val String.uIntVar
+    get() = this.pathVariable(String::toUInt)
 
 /**
  * Creates a [ULong] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-fun String.uLongVar() = this.pathVariable(String::toULong)
+val String.uLongVar
+    get() = this.pathVariable(String::toULong)
 
 /**
  * Creates a [UShort] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-fun String.uShortVar() = this.pathVariable(String::toUShort)
+val String.uShortVar
+    get() = this.pathVariable(String::toUShort)
 
 /**
  * Extracts path variables from the [org.springframework.web.reactive.function.server.ServerRequest].

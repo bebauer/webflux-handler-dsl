@@ -54,13 +54,14 @@ fun <T> String.cookieName(converter: (List<String>) -> T) = CookieName(this, con
  * @param T the type of the cookie value
  * @param U the type of the conversion result
  */
-fun <T, U> CookieName<T, U>.optional(): CookieName<Option<T>, U> = CookieName(this.name, this.converter) {
-    val value = this.valueExtractor(it)
-    when (value) {
-        is Either.Left -> Right(None)
-        is Either.Right -> value.map { v -> v.toOption() }
+val <T, U> CookieName<T, U>.optional: CookieName<Option<T>, U>
+    get() = CookieName(this.name, this.converter) {
+        val value = this.valueExtractor(it)
+        when (value) {
+            is Either.Left -> Right(None)
+            is Either.Right -> value.map { v -> v.toOption() }
+        }
     }
-}
 
 /**
  * Makes a [CookieName] optional with a default value.
@@ -80,13 +81,14 @@ fun <T, U> CookieName<T, U>.optional(defaultValue: T): CookieName<T, U> = Cookie
 /**
  * Creates a [CookieName] that only extracts the first value.
  */
-fun <T, U> CookieName<out List<T>, out List<U>>.single() =
-    this.name.cookieName { this.converter(it).first() }
+val <T, U> CookieName<out List<T>, out List<U>>.single: CookieName<U, U>
+    get() = this.name.cookieName { this.converter(it).first() }
 
 /**
  * Creates a required [CookieName] that returns the value as list of strings.
  */
-fun String.stringCookie() = this.cookieName { it }
+val String.stringCookie: CookieName<List<String>, List<String>>
+    get() = this.cookieName { it }
 
 /**
  * Extract a cookie from the [org.springframework.web.reactive.function.server.ServerRequest].
