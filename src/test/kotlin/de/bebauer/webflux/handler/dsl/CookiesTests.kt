@@ -1,177 +1,166 @@
 package de.bebauer.webflux.handler.dsl
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
+import io.kotlintest.shouldBe
+import io.kotlintest.specs.WordSpec
 
-class CookiesTests {
+class CookiesTests : WordSpec({
+    "cookie" should {
+        "extract set required cookie values" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie) { (test) ->
+                        complete(test)
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "xxx" }
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
 
-    @Test
-    fun `required cookie set`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie) { (test) ->
-                    complete(test)
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("xxx") }
-            },
-            request = { get().uri("/test").cookie("test", "xxx") })
+        "fail with bad request if required cookie is missing" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie) { (test) ->
+                        complete(test)
+                    }
+                },
+                { expectStatus().isBadRequest })
+        }
+
+        "extract set optional cookie as Some" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.optional) { test ->
+                        complete(test.toString())
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "Some([xxx])" }
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
+
+        "extract missing optional cookie as None" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.optional) { test ->
+                        complete(test.toString())
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "None" }
+                })
+        }
+
+        "extract cookie values if it is set and was defined as optional with default value" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
+                        complete(test)
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "xxx" }
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
+
+        "fallback to default values if optional cookie is missing" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
+                        complete(test)
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "abc" }
+                })
+        }
+
+        "extract single value from set cookie" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single) { test ->
+                        complete(test)
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "xxx" }
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
+
+        "fail with bad request if cookie is missing when trying to extract single value" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single) { test ->
+                        complete(test)
+                    }
+                },
+                {
+                    expectStatus().isBadRequest
+                })
+        }
+
+        "extract single optional value as Some if cookie is set" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single.optional) { test ->
+                        complete(test.toString())
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "Some(xxx)" }
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
+
+        "extract single optional value as None if cookie is missing" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single.optional) { test ->
+                        complete(test.toString())
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "None" }
+                })
+        }
+
+        "extract single cookie value if it was defined as optional with default" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single.optional("abc")) { test ->
+                        complete(test)
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "xxx" }
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
+
+        "fallback to default value if cookie defined as single optional with default value is missing" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single.optional("abc")) { test ->
+                        complete(test)
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .apply { responseBody shouldBe "abc" }
+                })
+        }
     }
-
-    @Test
-    fun `required cookie missing`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie) { (test) ->
-                    complete(test)
-                }
-            },
-            { expectStatus().isBadRequest })
-    }
-
-    @Test
-    fun `optional cookie set`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.optional) { test ->
-                    complete(test.toString())
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("Some([xxx])") }
-            },
-            request = { get().uri("/test").cookie("test", "xxx") })
-    }
-
-    @Test
-    fun `optional cookie missing`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.optional) { test ->
-                    complete(test.toString())
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("None") }
-            })
-    }
-
-    @Test
-    fun `optional cookie with default set`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
-                    complete(test)
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("xxx") }
-            },
-            request = { get().uri("/test").cookie("test", "xxx") })
-    }
-
-    @Test
-    fun `optional cookie with default missing`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
-                    complete(test)
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("abc") }
-            })
-    }
-
-    @Test
-    fun `single cookie set`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.single) { test ->
-                    complete(test)
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("xxx") }
-            },
-            request = { get().uri("/test").cookie("test", "xxx") })
-    }
-
-    @Test
-    fun `single cookie missing`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.single) { test ->
-                    complete(test)
-                }
-            },
-            {
-                expectStatus().isBadRequest
-            })
-    }
-
-    @Test
-    fun `single optional cookie set`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.single.optional) { test ->
-                    complete(test.toString())
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("Some(xxx)") }
-            },
-            request = { get().uri("/test").cookie("test", "xxx") })
-    }
-
-    @Test
-    fun `single optional cookie missing`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.single.optional) { test ->
-                    complete(test.toString())
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("None") }
-            })
-    }
-
-    @Test
-    fun `single optional cookie with default set`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.single.optional("abc")) { test ->
-                    complete(test)
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("xxx") }
-            },
-            request = { get().uri("/test").cookie("test", "xxx") })
-    }
-
-    @Test
-    fun `single optional cookie with default missing`() {
-        runHandlerTest(
-            handler {
-                cookie("test".stringCookie.single.optional("abc")) { test ->
-                    complete(test)
-                }
-            },
-            {
-                expectStatus().isOk.expectBody(String::class.java).returnResult()
-                    .apply { assertThat(responseBody).isEqualTo("abc") }
-            })
-    }
-}
+})

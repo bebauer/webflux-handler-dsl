@@ -43,6 +43,7 @@ val assertJVersion = "3.11.1"
 val jacksonVersion = "2.9.7"
 val jUnitPlatformConsoleVersion = "1.2.0"
 val arrowVersion = "0.8.1"
+val kotlinTestVersion = "3.1.10"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -60,6 +61,7 @@ dependencies {
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion") {
         exclude(module = "kotlin-reflect")
     }
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:$kotlinTestVersion")
 }
 
 sourceSets["main"].java {
