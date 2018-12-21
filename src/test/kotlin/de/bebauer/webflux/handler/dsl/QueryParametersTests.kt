@@ -2,19 +2,22 @@ package de.bebauer.webflux.handler.dsl
 
 import arrow.core.None
 import arrow.core.Some
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
+import io.kotlintest.data.forall
+import io.kotlintest.matchers.collections.containExactly
+import io.kotlintest.should
+import io.kotlintest.shouldBe
+import io.kotlintest.specs.WordSpec
+import io.kotlintest.tables.row
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.router
+import reactor.core.publisher.toFlux
 import java.math.BigDecimal
 import java.math.BigInteger
 
 @ExperimentalUnsignedTypes
-class QueryParametersTests {
+class QueryParametersTests : WordSpec() {
 
     private val client: WebTestClient by lazy {
         val router = router {
@@ -44,174 +47,175 @@ class QueryParametersTests {
             .build()
     }
 
-    @Test
-    fun `all parameters set`() {
-        client.get()
-            .uri("/blah?v1=a&v2=b&v3=3&v4=4&v5=c&v6=1&v6=2&v7=3&v7=4&v8=5&v8=6")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(String::class.java)
-            .returnResult()
-            .apply { assertThat(responseBody).isEqualTo("a - Some(b) - 3 - Some(4) - c - [1, 2] - Some([3, 4]) - [5, 6]") }
-    }
+    init {
+        "parameters" should {
+            "extract all parameters when all are set" {
+                client.get()
+                    .uri("/blah?v1=a&v2=b&v3=3&v4=4&v5=c&v6=1&v6=2&v7=3&v7=4&v8=5&v8=6")
+                    .exchange()
+                    .expectStatus().isOk
+                    .expectBody(String::class.java)
+                    .returnResult()
+                    .responseBody shouldBe "a - Some(b) - 3 - Some(4) - c - [1, 2] - Some([3, 4]) - [5, 6]"
+            }
 
-    @Test
-    fun `only required parameters set`() {
-        client.get()
-            .uri("/blah?v1=a&v3=3&v6=1&v6=2")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(String::class.java)
-            .returnResult()
-            .apply { assertThat(responseBody).isEqualTo("a - None - 3 - None - default - [1, 2] - None - [9, 8, 7]") }
-    }
+            "extract the required parameters and those with default values if optional parameters are missing" {
+                client.get()
+                    .uri("/blah?v1=a&v3=3&v6=1&v6=2")
+                    .exchange()
+                    .expectStatus().isOk
+                    .expectBody(String::class.java)
+                    .returnResult()
+                    .responseBody shouldBe "a - None - 3 - None - default - [1, 2] - None - [9, 8, 7]"
+            }
 
-    @Test
-    fun `required parameters missing`() {
-        client.get()
-            .uri("/blah")
-            .exchange()
-            .expectStatus().isBadRequest
-    }
+            "fail with bad request if required parameters are missing" {
+                client.get()
+                    .uri("/blah")
+                    .exchange()
+                    .expectStatus().isBadRequest
+            }
 
-    @Test
-    fun `csvParam should handle string lists`() {
-        val router = router {
-            GET("/blah", handler {
-                parameter("test".csvParam) { test ->
-                    complete {
-                        contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
-                    }
+            "extract CSV string list parameters" {
+                val router = router {
+                    GET("/blah", handler {
+                        parameter("test".csvParam) { test ->
+                            complete {
+                                contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
+                            }
+                        }
+                    })
                 }
-            })
+
+                WebTestClient.bindToRouterFunction(router)
+                    .configureClient()
+                    .baseUrl("http://localhost")
+                    .build()
+                    .get()
+                    .uri("/blah?test=x,y,z")
+                    .exchange()
+                    .expectStatus().isOk
+                    .expectBody(List::class.java)
+                    .returnResult().responseBody shouldBe listOf("x", "y", "z")
+            }
+
+            "extract CSV int list parameters" {
+                val router = router {
+                    GET("/blah", handler {
+                        parameter("test".csvParam(String::toInt)) { test ->
+                            complete {
+                                contentType(MediaType.APPLICATION_JSON).body(test.toFlux(), Int::class.java)
+                            }
+                        }
+                    })
+                }
+
+                WebTestClient.bindToRouterFunction(router)
+                    .configureClient()
+                    .baseUrl("http://localhost")
+                    .build()
+                    .get()
+                    .uri("/blah?test=1,2,3")
+                    .exchange()
+                    .expectStatus().isOk
+                    .expectBodyList(Int::class.java)
+                    .returnResult().responseBody should containExactly(1, 2, 3)
+            }
         }
 
-        WebTestClient.bindToRouterFunction(router)
-            .configureClient()
-            .baseUrl("http://localhost")
-            .build()
-            .get()
-            .uri("/blah?test=x,y,z")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(List::class.java)
-            .returnResult().apply { assertThat(responseBody).containsExactly("x", "y", "z") }
-    }
-
-    @Test
-    fun `csvParam should handle int lists`() {
-        val router = router {
-            GET("/blah", handler {
-                parameter("test".csvParam(String::toInt)) { test ->
-                    complete {
-                        contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
-                    }
+        "parameter" should {
+            "extract a string query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::stringParam, testMode, "abc")
                 }
-            })
+            }
+
+            "extract a int query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::intParam, testMode, Int.MAX_VALUE)
+                }
+            }
+
+            "extract a short query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::shortParam, testMode, Short.MAX_VALUE)
+                }
+            }
+
+            "extract a long query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::longParam, testMode, Long.MAX_VALUE)
+                }
+            }
+
+            "extract a byte query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::byteParam, testMode, Byte.MAX_VALUE)
+                }
+            }
+
+            "extract a double query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::doubleParam, testMode, Double.MAX_VALUE)
+                }
+            }
+
+            "extract a float query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::floatParam, testMode, Float.MAX_VALUE)
+                }
+            }
+
+            "extract a BigDecimal query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(
+                        String::bigDecimalParam,
+                        testMode,
+                        BigDecimal.valueOf(Double.MAX_VALUE).add(1.toBigDecimal())
+                    )
+                }
+            }
+
+            "extract a BigInteger query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(
+                        String::bigIntegerParam,
+                        testMode,
+                        BigInteger.valueOf(Long.MAX_VALUE).add(1.toBigInteger())
+                    )
+                }
+            }
+
+            "extract a boolean query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::booleanParam, testMode, true)
+                }
+            }
+
+            "extract a uInt query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::uIntParam, testMode, UInt.MAX_VALUE)
+                }
+            }
+
+            "extract a uLong query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::uLongParam, testMode, ULong.MAX_VALUE)
+                }
+            }
+
+            "extract a uByte query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::uByteParam, testMode, UByte.MAX_VALUE)
+                }
+            }
+
+            "extract a uShort query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter(String::uShortParam, testMode, UShort.MAX_VALUE)
+                }
+            }
         }
-
-        WebTestClient.bindToRouterFunction(router)
-            .configureClient()
-            .baseUrl("http://localhost")
-            .build()
-            .get()
-            .uri("/blah?test=1,2,3")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(List::class.java)
-            .returnResult().apply { assertThat(responseBody).containsExactly(1, 2, 3) }
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `string query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::stringParam, testMode, "abc")
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `int query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::intParam, testMode, Int.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `short query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::shortParam, testMode, Short.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `long query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::longParam, testMode, Long.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `byte query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::byteParam, testMode, Byte.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `double query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::doubleParam, testMode, Double.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `float query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::floatParam, testMode, Float.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `BigDecimal query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(
-            String::bigDecimalParam,
-            testMode,
-            BigDecimal.valueOf(Double.MAX_VALUE).add(1.toBigDecimal())
-        )
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `BigInteger query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(
-            String::bigIntegerParam,
-            testMode,
-            BigInteger.valueOf(Long.MAX_VALUE).add(1.toBigInteger())
-        )
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `boolean query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::booleanParam, testMode, true)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `uInt query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::uIntParam, testMode, UInt.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `uLong query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::uLongParam, testMode, ULong.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `uByte query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::uByteParam, testMode, UByte.MAX_VALUE)
-    }
-
-    @ParameterizedTest
-    @EnumSource(TestMode::class)
-    fun `uShort query parameter`(testMode: TestMode) {
-        testTypedQueryParameter(String::uShortParam, testMode, UShort.MAX_VALUE)
     }
 
     enum class TestMode {
@@ -222,7 +226,11 @@ class QueryParametersTests {
         OPTIONAL_MISSING_DEFAULT,
         OPTIONAL_REPEATED_SET,
         OPTIONAL_REPEATED_MISSING,
-        OPTIONAL_REPEATED_MISSING_DEFAULT
+        OPTIONAL_REPEATED_MISSING_DEFAULT;
+
+        companion object {
+            val rows = TestMode.values().map { row(it) }.toTypedArray()
+        }
     }
 
     private fun <T> testTypedQueryParameter(
@@ -253,7 +261,7 @@ class QueryParametersTests {
                 expectStatus().isOk
                     .expectBody(String::class.java)
                     .returnResult()
-                    .apply { assertThat(responseBody).isEqualTo(testConfig.second.toString()) }
+                    .responseBody shouldBe testConfig.second.toString()
             },
             { GET("/test", it) },
             { get().uri("/test" + if (testConfig.second is None) "" else "?test=${value.toString()}") })
