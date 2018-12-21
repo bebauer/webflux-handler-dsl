@@ -2,12 +2,10 @@ package de.bebauer.webflux.handler.dsl
 
 import arrow.core.None
 import arrow.core.toOption
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.Arguments.arguments
-import org.junit.jupiter.params.provider.MethodSource
+import io.kotlintest.data.forall
+import io.kotlintest.shouldBe
+import io.kotlintest.specs.WordSpec
+import io.kotlintest.tables.row
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -15,9 +13,8 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
-import java.util.stream.Stream
 
-class HeadersTests {
+class HeadersTests : WordSpec() {
 
     data class TestArg<T>(val header: HeaderName<List<T>, List<T>>, val expected: Any, val value: String) {
         override fun toString(): String {
@@ -32,11 +29,9 @@ class HeadersTests {
             header: HeaderName<List<T>, List<T>>,
             expected: Any = TEST_HEADER_VALUE,
             value: String = TEST_HEADER_VALUE
-        ) = arguments(TestArg(header, expected, value))!!
+        ) = row(TestArg(header, expected, value))
 
-        @Suppress("unused")
-        @JvmStatic
-        fun headerArguments(): Stream<Arguments> = Stream.of(
+        private val headerArguments = arrayOf(
             testArg(
                 Headers.Accept,
                 MediaType.APPLICATION_JSON,
@@ -137,89 +132,85 @@ class HeadersTests {
 
         executeClient(router, header.name, *values).isOk
             .expectBody(String::class.java)
-            .returnResult().apply { assertThat(responseBody).isEqualTo(expected) }
+            .returnResult().responseBody shouldBe expected
     }
 
-    @Test
-    fun `raw header`() {
-        testHeader("test".rawHeader, "a, b", "a", "b")
-    }
+    init {
+        "headerValue" should {
+            "extract a raw header" {
+                testHeader("test".rawHeader, "a, b", "a", "b")
+            }
 
-    @ParameterizedTest
-    @MethodSource("headerArguments")
-    fun `provided headers`(arg: TestArg<*>) {
-        val (header, expected, value) = arg
+            "support the provided headers" {
+                forall(*headerArguments) { arg ->
+                    val (header, expected, value) = arg
 
-        testHeader(header, listOf(expected).toString(), value)
-        testHeader(header.single, expected.toString(), value)
-    }
-
-    @Test
-    fun `optional header value set`() {
-        val router = router {
-            GET("/test", handler {
-                headerValue(Headers.Accept.single.optional) { accept ->
-                    complete {
-                        body(BodyInserters.fromObject(accept.toString()))
-                    }
+                    testHeader(header, listOf(expected).toString(), value)
+                    testHeader(header.single, expected.toString(), value)
                 }
-            })
-        }
+            }
 
-        executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
-            .expectBody(String::class.java)
-            .returnResult()
-            .apply { assertThat(responseBody).isEqualTo(MediaType.APPLICATION_JSON_VALUE.toOption().toString()) }
-    }
-
-    @Test
-    fun `optional header value missing`() {
-        val router = router {
-            GET("/test", handler {
-                headerValue(Headers.AccessControlMaxAge.single.optional) { accept ->
-                    complete {
-                        body(BodyInserters.fromObject(accept.toString()))
-                    }
+            "extract a set optional header value as 'Some'" {
+                val router = router {
+                    GET("/test", handler {
+                        headerValue(Headers.Accept.single.optional) { accept ->
+                            complete {
+                                body(BodyInserters.fromObject(accept.toString()))
+                            }
+                        }
+                    })
                 }
-            })
-        }
 
-        executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
-            .expectBody(String::class.java)
-            .returnResult()
-            .apply { assertThat(responseBody).isEqualTo(None.toString()) }
-    }
+                executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
+                    .expectBody(String::class.java)
+                    .returnResult().responseBody shouldBe MediaType.APPLICATION_JSON_VALUE.toOption().toString()
+            }
 
-    @Test
-    fun `optional header value missing with default`() {
-        val router = router {
-            GET("/test", handler {
-                headerValue(Headers.AccessControlMaxAge.single.optional("xxx")) { accept ->
-                    complete {
-                        body(BodyInserters.fromObject(accept))
-                    }
+            "extract a missing optional header value as 'None'" {
+                val router = router {
+                    GET("/test", handler {
+                        headerValue(Headers.AccessControlMaxAge.single.optional) { accept ->
+                            complete {
+                                body(BodyInserters.fromObject(accept.toString()))
+                            }
+                        }
+                    })
                 }
-            })
-        }
 
-        executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
-            .expectBody(String::class.java)
-            .returnResult()
-            .apply { assertThat(responseBody).isEqualTo("xxx") }
-    }
+                executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
+                    .expectBody(String::class.java)
+                    .returnResult().responseBody shouldBe None.toString()
+            }
 
-    @Test
-    fun `required header value missing`() {
-        val router = router {
-            GET("/test", handler {
-                headerValue(Headers.AccessControlMaxAge.single) { accept ->
-                    complete {
-                        body(BodyInserters.fromObject(accept))
-                    }
+            "fallback to a defined default value if an optional header is missing" {
+                val router = router {
+                    GET("/test", handler {
+                        headerValue(Headers.AccessControlMaxAge.single.optional("xxx")) { accept ->
+                            complete {
+                                body(BodyInserters.fromObject(accept))
+                            }
+                        }
+                    })
                 }
-            })
-        }
 
-        executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isBadRequest
+                executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
+                    .expectBody(String::class.java)
+                    .returnResult().responseBody shouldBe "xxx"
+            }
+
+            "fail with bad request if a required header value is missing" {
+                val router = router {
+                    GET("/test", handler {
+                        headerValue(Headers.AccessControlMaxAge.single) { accept ->
+                            complete {
+                                body(BodyInserters.fromObject(accept))
+                            }
+                        }
+                    })
+                }
+
+                executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isBadRequest
+            }
+        }
     }
 }

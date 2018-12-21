@@ -10,9 +10,9 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
 
     val queryParam = ClassName("de.bebauer.webflux.handler.dsl", "QueryParameter")
     val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
-    val test = ClassName("org.junit.jupiter.api", "Test")
+    val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
 
-    val testClass = TypeSpec.classBuilder("QueryParametersGeneratedTests")
+    val tests = mutableListOf<String>()
 
     (2..10).forEach { i ->
         val functionBuilder = FunSpec.builder("parameters")
@@ -54,34 +54,42 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
 
         fileBuilder.addFunction(functionBuilder.build())
 
-        val testFunctionBuilder = FunSpec.builder("parameters should extract $i values")
-            .addAnnotation(test)
-            .addStatement(
-                """
-                |runHandlerTest(
-                |    handler {
-                |       parameters(${(1..i).map { "\"p$it\".intParam" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
-                |           ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
-                |       }
-                |    },
-                |    {
-                |        expectStatus().isOk
-                |            .expectBodyList(Int::class.java).returnResult()
-                |            .apply { assertThat(responseBody).containsExactly(${(1..i).map { "$it" }.joinToString()}) }
-                |    },
-                |    request = { get().uri("/test?${(1..i).map { "p$it=$it" }.joinToString("&")}") })
-                """.trimMargin()
-            )
-
-        testClass.addFunction(testFunctionBuilder.build())
+        tests.add("""
+            |"extract $i values" {
+            |   runHandlerTest(
+            |       handler {
+            |          parameters(${(1..i).map { "\"p$it\".intParam" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
+            |              ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
+            |          }
+            |       },
+            |       {
+            |           expectStatus().isOk
+            |               .expectBodyList(Int::class.java)
+            |               .returnResult().responseBody should containExactly(${(1..i).map { "$it" }.joinToString()})
+            |       },
+            |       request = { get().uri("/test?${(1..i).map { "p$it=$it" }.joinToString("&")}") })
+            |
+            |}
+            """.trimMargin())
     }
 
     fileBuilder.build().writeTo(outputDir)
 
     FileSpec.builder("de.bebauer.webflux.handler.dsl", "QueryParametersGeneratedTests")
-        .addImport("org.assertj.core.api", "Assertions.assertThat")
+        .addImport("io.kotlintest", "should")
+        .addImport("io.kotlintest.matchers.collections", "containExactly")
         .addImport("reactor.core.publisher", "Flux")
-        .addType(testClass.build())
+        .addType(
+            TypeSpec.classBuilder("QueryParametersGeneratedTests").superclass(wordSpec).addInitializerBlock(
+                CodeBlock.of(
+                    """
+                        |"parameters" should {
+                        |   ${tests.joinToString("\n\n")}
+                        |}
+                        |""".trimMargin()
+                )
+            ).build()
+        )
         .build()
         .writeTo(testOutDir)
 }

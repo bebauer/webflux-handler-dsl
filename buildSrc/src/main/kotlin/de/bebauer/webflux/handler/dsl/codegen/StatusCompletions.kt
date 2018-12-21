@@ -2,13 +2,12 @@ package de.bebauer.webflux.handler.dsl.codegen
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import org.springframework.util.LinkedMultiValueMap
 import java.io.File
 
 internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     val srcFileBuilder = FileSpec.builder("de.bebauer.webflux.handler.dsl", "StatusCompletionsGenerated")
         .addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("\"UnassignedFluxMonoInstance\"").build())
-
-    val testClass = TypeSpec.classBuilder("StatusCompletionsGeneratedTests")
 
     val statusList =
         listOf("OK", "NOT_FOUND", "BAD_REQUEST", "FORBIDDEN", "INTERNAL_SERVER_ERROR", "UNAUTHORIZED", "CREATED")
@@ -21,7 +20,9 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
     val bodyInserter = ClassName("org.springframework.web.reactive.function", "BodyInserter")
     val serverHttpResponse = ClassName("org.springframework.http.server.reactive", "ServerHttpResponse")
-    val test = ClassName("org.junit.jupiter.api", "Test")
+    val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+
+    val tests = LinkedMultiValueMap<String, String>()
 
     fun generateWithBuilder(status: String) {
         srcFileBuilder.addFunction(
@@ -41,44 +42,38 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 .build()
         )
 
-        testClass.addFunction(
-            FunSpec.builder("${status.underscoreToCamelCase()} should complete without body")
-                .addAnnotation(test)
-                .addStatement(
-                    """
-                        runHandlerTest(
-                            handler {
-                                ${status.underscoreToCamelCase()}()
-                            },
-                            {
-                                expectStatus().${status.statusToCheck()}
-                                    .expectBody(String::class.java).returnResult()
-                                    .apply { assertThat(responseBody).isNullOrEmpty() }
-                            })
-                    """.trimIndent()
-                )
-                .build()
+        tests.add(
+            status, """
+                "complete without body" {
+                    runHandlerTest(
+                        handler {
+                            ${status.underscoreToCamelCase()}()
+                        },
+                        {
+                            expectStatus().${status.statusToCheck()}
+                                .expectBody(String::class.java)
+                                .returnResult().responseBody.isNullOrEmpty() shouldBe true
+                        })
+                }
+            """.trimIndent()
         )
 
-        testClass.addFunction(
-            FunSpec.builder("${status.underscoreToCamelCase()} should complete with body builder")
-                .addAnnotation(test)
-                .addStatement(
-                    """
-                        runHandlerTest(
-                            handler {
-                                ${status.underscoreToCamelCase()} {
-                                    body(fromObject("test"))
-                                }
-                            },
-                            {
-                                expectStatus().${status.statusToCheck()}
-                                    .expectBody(String::class.java).returnResult()
-                                    .apply { assertThat(responseBody).isEqualTo("test") }
-                            })
-                    """.trimIndent()
-                )
-                .build()
+        tests.add(
+            status, """
+                "complete with body builder" {
+                    runHandlerTest(
+                        handler {
+                            ${status.underscoreToCamelCase()} {
+                                body(fromObject("test"))
+                            }
+                        },
+                        {
+                            expectStatus().${status.statusToCheck()}
+                                .expectBody(String::class.java)
+                                .returnResult().responseBody shouldBe "test"
+                        })
+                }
+            """.trimIndent()
         )
     }
 
@@ -99,23 +94,20 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 .build()
         )
 
-        testClass.addFunction(
-            FunSpec.builder("${status.underscoreToCamelCase()} should complete with flux")
-                .addAnnotation(test)
-                .addStatement(
-                    """
-                        runHandlerTest(
-                            handler {
-                                ${status.underscoreToCamelCase()}(Flux.fromIterable(listOf(1, 2, 3)))
-                            },
-                            {
-                                expectStatus().${status.statusToCheck()}
-                                    .expectBodyList(Int::class.java).returnResult()
-                                    .apply { assertThat(responseBody).containsExactly(1, 2, 3) }
-                            })
-                    """.trimIndent()
-                )
-                .build()
+        tests.add(
+            status, """
+                "complete with 'Flux'" {
+                    runHandlerTest(
+                        handler {
+                            ${status.underscoreToCamelCase()}(Flux.fromIterable(listOf(1, 2, 3)))
+                        },
+                        {
+                            expectStatus().${status.statusToCheck()}
+                                .expectBodyList(Int::class.java)
+                                .returnResult().responseBody should containExactly(1, 2, 3)
+                        })
+                }
+            """.trimIndent()
         )
     }
 
@@ -136,23 +128,20 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 .build()
         )
 
-        testClass.addFunction(
-            FunSpec.builder("${status.underscoreToCamelCase()} should complete with mono")
-                .addAnnotation(test)
-                .addStatement(
-                    """
-                        runHandlerTest(
-                            handler {
-                                ${status.underscoreToCamelCase()}(Mono.just(123))
-                            },
-                            {
-                                expectStatus().${status.statusToCheck()}
-                                    .expectBody(Int::class.java).returnResult()
-                                    .apply { assertThat(responseBody).isEqualTo(123) }
-                            })
-                    """.trimIndent()
-                )
-                .build()
+        tests.add(
+            status, """
+                "complete with 'Mono'" {
+                    runHandlerTest(
+                        handler {
+                            ${status.underscoreToCamelCase()}(Mono.just(123))
+                        },
+                        {
+                            expectStatus().${status.statusToCheck()}
+                                .expectBody(Int::class.java)
+                                .returnResult().responseBody shouldBe 123
+                        })
+                }
+            """.trimIndent()
         )
     }
 
@@ -173,23 +162,20 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 .build()
         )
 
-        testClass.addFunction(
-            FunSpec.builder("${status.underscoreToCamelCase()} should complete with value")
-                .addAnnotation(test)
-                .addStatement(
-                    """
-                        runHandlerTest(
-                            handler {
-                                ${status.underscoreToCamelCase()}("123")
-                            },
-                            {
-                                expectStatus().${status.statusToCheck()}
-                                    .expectBody(String::class.java).returnResult()
-                                    .apply { assertThat(responseBody).isEqualTo("123") }
-                            })
-                    """.trimIndent()
-                )
-                .build()
+        tests.add(
+            status, """
+                "complete with value" {
+                    runHandlerTest(
+                        handler {
+                            ${status.underscoreToCamelCase()}("123")
+                        },
+                        {
+                            expectStatus().${status.statusToCheck()}
+                                .expectBody(String::class.java)
+                                .returnResult().responseBody shouldBe "123"
+                        })
+                }
+            """.trimIndent()
         )
     }
 
@@ -209,23 +195,20 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 .build()
         )
 
-        testClass.addFunction(
-            FunSpec.builder("${status.underscoreToCamelCase()} should complete with body inserter")
-                .addAnnotation(test)
-                .addStatement(
-                    """
-                        runHandlerTest(
-                            handler {
-                                ${status.underscoreToCamelCase()}(fromObject("123"))
-                            },
-                            {
-                                expectStatus().${status.statusToCheck()}
-                                    .expectBody(String::class.java).returnResult()
-                                    .apply { assertThat(responseBody).isEqualTo("123") }
-                            })
-                    """.trimIndent()
-                )
-                .build()
+        tests.add(
+            status, """
+                "complete with body inserter" {
+                    runHandlerTest(
+                        handler {
+                            ${status.underscoreToCamelCase()}(fromObject("123"))
+                        },
+                        {
+                            expectStatus().${status.statusToCheck()}
+                                .expectBody(String::class.java)
+                                .returnResult().responseBody shouldBe "123"
+                        })
+                }
+            """.trimIndent()
         )
     }
 
@@ -240,11 +223,26 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     srcFileBuilder.build().writeTo(outputDir)
 
     FileSpec.builder("de.bebauer.webflux.handler.dsl", "StatusCompletionsGeneratedTests")
-        .addImport("org.assertj.core.api", "Assertions.assertThat")
+        .addImport("io.kotlintest", "should", "shouldBe")
+        .addImport("io.kotlintest.matchers.collections", "containExactly")
         .addImport("org.springframework.web.reactive.function", "BodyInserters.fromObject")
         .addImport("reactor.core.publisher", "Flux")
         .addImport("reactor.core.publisher", "Mono")
-        .addType(testClass.build())
+        .addType(
+            TypeSpec.classBuilder("StatusCompletionsGeneratedTests")
+                .superclass(wordSpec)
+                .addInitializerBlock(
+                    CodeBlock.of(
+                        tests.keys.joinToString("\n\n") {
+                            """
+                            |"${it.toString().underscoreToCamelCase()}" should {
+                            |   ${tests[it]?.joinToString("\n\n")}
+                            |}
+                            |""".trimMargin()
+                        }
+                    )
+                ).build()
+        )
         .build()
         .writeTo(testOutDir)
 }
