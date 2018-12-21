@@ -8,4 +8,5 @@ repositories {
 
 dependencies {
     implementation("com.squareup:kotlinpoet:1.0.0-RC3")
+    implementation("org.springframework:spring-core:5.1.2.RELEASE")
 }
