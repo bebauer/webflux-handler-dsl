@@ -5,7 +5,29 @@
 [![Build Status](https://travis-ci.org/bebauer/webflux-handler-dsl.svg?branch=master)](https://travis-ci.org/bebauer/gcloud-scala)
 [ ![Download](https://api.bintray.com/packages/bebauer/maven/webflux-handler-dsl/images/download.svg) ](https://bintray.com/bebauer/maven/webflux-handler-dsl/_latestVersion)
 
-This library provides a Kotlin DSL for building Spring Webflux handlers.
+This library provides a Kotlin DSL for building Spring Webflux handlers. It starts
+where the routing DSL from Spring ends.
+
+### Example
+
+```kotlin
+import de.bebauer.webflux.handler.dsl.*
+
+@Configuration
+class Config(private val repository: ItemRepository) {
+
+    private val getItem = handler {
+        pathVariable("id".stringVar) { id ->
+            complete(repository.findById(id)) or notFound()
+        }
+    }
+
+    @Bean
+    fun routes() = router {
+        GET("/item/{id}", getItem)
+    }
+}
+```
 
 ## Getting Started
 
