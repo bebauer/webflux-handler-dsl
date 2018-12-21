@@ -20,8 +20,9 @@ class BodyTests : WordSpec() {
                         }
                     },
                     {
-                        expectStatus().isOk.expectBody(Entity::class.java).returnResult()
-                            .apply { responseBody shouldBe Entity("test") }
+                        expectStatus().isOk
+                            .expectBody(Entity::class.java)
+                            .returnResult().responseBody shouldBe Entity("test")
                     },
                     route = { POST("/test", it) },
                     request = { post().uri("/test").body(fromObject(Entity("test"))) })
@@ -39,8 +40,9 @@ class BodyTests : WordSpec() {
                         }
                     },
                     {
-                        expectStatus().isOk.expectBodyList(Entity::class.java).returnResult()
-                            .apply { responseBody shouldBe entities }
+                        expectStatus().isOk
+                            .expectBodyList(Entity::class.java)
+                            .returnResult().responseBody shouldBe entities
                     },
                     route = { POST("/test", it) },
                     request = { post().uri("/test").body(entities.toFlux(), Entity::class.java) })
@@ -56,8 +58,9 @@ class BodyTests : WordSpec() {
                         }
                     },
                     {
-                        expectStatus().isOk.expectBody(Entity::class.java).returnResult()
-                            .apply { responseBody shouldBe Entity("test") }
+                        expectStatus().isOk
+                            .expectBody(Entity::class.java)
+                            .returnResult().responseBody shouldBe Entity("test")
                     },
                     route = { POST("/test", it) },
                     request = { post().uri("/test").body(fromObject(Entity("test"))) })
@@ -71,8 +74,9 @@ class BodyTests : WordSpec() {
                         }
                     },
                     {
-                        expectStatus().isOk.expectBody(Entity::class.java).returnResult()
-                            .apply { responseBody shouldBe Entity("test") }
+                        expectStatus().isOk
+                            .expectBody(Entity::class.java)
+                            .returnResult().responseBody shouldBe Entity("test")
                     },
                     route = { POST("/test", it) },
                     request = { post().uri("/test").body(fromObject(Entity("test"))) })

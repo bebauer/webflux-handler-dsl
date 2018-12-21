@@ -30,8 +30,9 @@ class CompletionsTests : WordSpec({
                     complete(Mono.just("xxx"))
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isOk
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "xxx"
                 })
         }
 
@@ -41,8 +42,9 @@ class CompletionsTests : WordSpec({
                     complete(Flux.fromIterable(listOf(1, 2)))
                 },
                 {
-                    expectStatus().isOk.expectBodyList(Int::class.java).returnResult()
-                        .apply { responseBody should containExactly(1, 2) }
+                    expectStatus().isOk
+                        .expectBodyList(Int::class.java)
+                        .returnResult().responseBody should containExactly(1, 2)
                 })
         }
 
@@ -52,8 +54,9 @@ class CompletionsTests : WordSpec({
                     complete("xxx")
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isOk
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "xxx"
                 })
         }
 
@@ -63,8 +66,9 @@ class CompletionsTests : WordSpec({
                     complete(HttpStatus.UNAUTHORIZED, Mono.just("xxx"))
                 },
                 {
-                    expectStatus().isUnauthorized.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isUnauthorized
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "xxx"
                 })
         }
 
@@ -74,8 +78,9 @@ class CompletionsTests : WordSpec({
                     complete(HttpStatus.UNAUTHORIZED, Flux.fromIterable(listOf(1, 2)))
                 },
                 {
-                    expectStatus().isUnauthorized.expectBodyList(Int::class.java).returnResult()
-                        .apply { responseBody should containExactly(1, 2) }
+                    expectStatus().isUnauthorized
+                        .expectBodyList(Int::class.java)
+                        .returnResult().responseBody should containExactly(1, 2)
                 })
         }
 
@@ -85,8 +90,9 @@ class CompletionsTests : WordSpec({
                     complete(HttpStatus.UNAUTHORIZED, "xxx")
                 },
                 {
-                    expectStatus().isUnauthorized.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isUnauthorized
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "xxx"
                 })
         }
 
@@ -103,8 +109,8 @@ class CompletionsTests : WordSpec({
                     expectStatus().isOk
                         .expectHeader().contentType(MediaType.APPLICATION_JSON)
                         .expectHeader().valueEquals("xxx", "abc")
-                        .expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "123" }
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "123"
                 })
         }
 
@@ -121,8 +127,8 @@ class CompletionsTests : WordSpec({
                     expectStatus().isUnauthorized
                         .expectHeader().contentType(MediaType.APPLICATION_JSON)
                         .expectHeader().valueEquals("xxx", "abc")
-                        .expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "123" }
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "123"
                 })
         }
 
@@ -133,8 +139,8 @@ class CompletionsTests : WordSpec({
                 },
                 {
                     expectStatus().isOk
-                        .expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "123" }
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "123"
                 })
         }
 
@@ -145,8 +151,8 @@ class CompletionsTests : WordSpec({
                 },
                 {
                     expectStatus().isUnauthorized
-                        .expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "123" }
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "123"
                 })
         }
     }

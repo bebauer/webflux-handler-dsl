@@ -13,8 +13,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "xxx"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -37,8 +36,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "Some([xxx])" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "Some([xxx])"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -51,8 +49,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "None" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "None"
                 })
         }
 
@@ -64,8 +61,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "xxx"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -78,8 +74,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "abc" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "abc"
                 })
         }
 
@@ -91,8 +86,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "xxx"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -117,8 +111,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "Some(xxx)" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "Some(xxx)"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -131,8 +124,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "None" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "None"
                 })
         }
 
@@ -144,8 +136,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "xxx" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "xxx"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -158,8 +149,7 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult()
-                        .apply { responseBody shouldBe "abc" }
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "abc"
                 })
         }
     }
