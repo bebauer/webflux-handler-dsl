@@ -38,8 +38,6 @@ scmVersion {
 }
 
 val springVersion = "5.1.2.RELEASE"
-val junitVersion = "5.3.2"
-val assertJVersion = "3.11.1"
 val jacksonVersion = "2.9.7"
 val jUnitPlatformConsoleVersion = "1.2.0"
 val arrowVersion = "0.8.1"
@@ -49,13 +47,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.springframework:spring-webflux:$springVersion")
     implementation("io.arrow-kt:arrow-core:$arrowVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntime("org.junit.platform:junit-platform-console:$jUnitPlatformConsoleVersion")
     testImplementation("org.springframework:spring-test:$springVersion")
     testImplementation("org.springframework:spring-context:$springVersion")
-    testImplementation("org.assertj:assertj-core:$assertJVersion")
     // undo 1.3 workaround with next jackson kotlin version
     testImplementation(kotlin("reflect"))
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion") {
