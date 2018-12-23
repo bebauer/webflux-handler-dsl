@@ -6,6 +6,7 @@ import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.web.reactive.function.BodyInserter
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -17,12 +18,12 @@ import reactor.core.publisher.Mono
  * @param flux the [Flux]
  * @param builderInit the builder function
  */
-inline fun <reified T> HandlerDsl.complete(
+inline fun <reified T> complete(
     status: HttpStatus,
     flux: Flux<T>,
     noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
-): FinalCompleteOperation =
-    complete(FinalCompleteOperation { ServerResponse.status(status).builderInit().body(flux, T::class.java) })
+): ResponseBuilderCompleteOperation =
+    ResponseBuilderCompleteOperation { ServerResponse.status(status).builderInit().body(flux, T::class.java) }
 
 /**
  * Completes with the specified [HttpStatus] and the body from a [Mono]. Allows additional customization of the response
@@ -32,11 +33,11 @@ inline fun <reified T> HandlerDsl.complete(
  * @param mono the [Mono]
  * @param builderInit the builder function
  */
-inline fun <reified T> HandlerDsl.complete(
+inline fun <reified T> complete(
     status: HttpStatus,
     mono: Mono<T>,
     noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
-): MonoBodyCompleteOperation<T> = complete(MonoBodyCompleteOperation(status, mono, T::class.java, builderInit))
+): MonoBodyCompleteOperation<T> = MonoBodyCompleteOperation(status, mono, T::class.java, builderInit)
 
 /**
  * Completes the handler with the specified [HttpStatus] and a [ServerResponse.BodyBuilder] result.
@@ -53,10 +54,10 @@ inline fun <reified T> HandlerDsl.complete(
  *
  * @param status the response status
  */
-fun HandlerDsl.complete(
+fun complete(
     status: HttpStatus,
     init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>
-): FinalCompleteOperation = complete(FinalCompleteOperation { ServerResponse.status(status).init() })
+): ResponseBuilderCompleteOperation = ResponseBuilderCompleteOperation { ServerResponse.status(status).init() }
 
 /**
  * Completes with the specified [HttpStatus] and the body from an object. Allows additional customization of the
@@ -66,19 +67,19 @@ fun HandlerDsl.complete(
  * @param value the object that's written to the body using [fromObject]
  * @param builderInit the builder function
  */
-fun <T> HandlerDsl.complete(
+fun <T> complete(
     status: HttpStatus,
     value: T?,
     builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
-): ValueCompleteOperation<T> = complete(ValueCompleteOperation(status, value.toOption(), builderInit))
+): ValueCompleteOperation<T> = ValueCompleteOperation(status, value.toOption(), builderInit)
 
 /**
  * Completes with the specified [HttpStatus].
  *
  * @param status the response status
  */
-fun HandlerDsl.complete(status: HttpStatus): FinalCompleteOperation =
-    complete(FinalCompleteOperation { ServerResponse.status(status).build() })
+fun complete(status: HttpStatus): ResponseBuilderCompleteOperation =
+    ResponseBuilderCompleteOperation { ServerResponse.status(status).build() }
 
 /**
  * Completes with specified [HttpStatus] and the body from a [BodyInserter]. Allows additional customization of the
@@ -88,9 +89,33 @@ fun HandlerDsl.complete(status: HttpStatus): FinalCompleteOperation =
  * @param inserter the body inserter
  * @param builderInit the builder function
  */
-fun HandlerDsl.complete(
+fun complete(
     status: HttpStatus,
     inserter: BodyInserter<*, in ServerHttpResponse>,
     builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
-): FinalCompleteOperation =
-    complete(FinalCompleteOperation { ServerResponse.status(status).builderInit().body(inserter) })
+): ResponseBuilderCompleteOperation =
+    ResponseBuilderCompleteOperation { ServerResponse.status(status).builderInit().body(inserter) }
+
+/**
+ * Complete the handler with the specified response.
+ *
+ * @param response the [ServerResponse] Mono
+ */
+fun complete(response: Mono<ServerResponse>): ResponseCompleteOperation {
+    return ResponseCompleteOperation(response)
+}
+
+/**
+ * Fails the handler with the specified exception.
+ *
+ * @param throwable the exception that caused the failure
+ */
+fun failWith(throwable: Throwable): ResponseCompleteOperation = complete(Mono.error(throwable))
+
+/**
+ *  Fails the handler with an Internal Server Error and the specified message.
+ *
+ *  @param message the error message
+ */
+fun failWith(message: String): ResponseCompleteOperation =
+    failWith(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message))

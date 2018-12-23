@@ -13,20 +13,7 @@ import reactor.core.publisher.Mono
 class HandlerDslTests : WordSpec({
 
     "handler DSL" should {
-        "fail without a complete" {
-            runHandlerTest(
-                handler { },
-                { expectStatus().is5xxServerError })
-        }
-
-        "fail with multiple completes" {
-            runHandlerTest(handler {
-                ok("xxx")
-                ok("abc")
-            }, { expectStatus().is5xxServerError })
-        }
-
-        "allow completions inside if - else" {
+       "allow completions inside if - else" {
             forall(row("a"), row("b")) { value ->
                 runHandlerTest(
                     handler {
@@ -86,11 +73,22 @@ class HandlerDslTests : WordSpec({
         "complete with the first non empty completion in a chain (first)" {
             runHandlerTest(
                 handler {
-                    ok("1") or complete(HttpStatus.NOT_FOUND, "1")
+                    ok("1") or complete(HttpStatus.NOT_FOUND, "2")
                 },
                 {
                     expectStatus().isOk.expectBody(String::class.java).returnResult()
                         .responseBody shouldBe "1"
+                })
+        }
+
+        "complete with the first non empty completion in a chain (middle)" {
+            runHandlerTest(
+                handler {
+                    ok(Mono.empty<String>()) or ok("123") or complete(HttpStatus.NOT_FOUND, "Test")
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult()
+                        .responseBody shouldBe "123"
                 })
         }
 

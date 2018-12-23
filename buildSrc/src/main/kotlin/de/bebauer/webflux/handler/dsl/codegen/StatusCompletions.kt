@@ -21,7 +21,8 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     val bodyInserter = ClassName("org.springframework.web.reactive.function", "BodyInserter")
     val serverHttpResponse = ClassName("org.springframework.http.server.reactive", "ServerHttpResponse")
     val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
-    val finalCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "FinalCompleteOperation")
+    val responseBuilderCompleteOperation =
+        ClassName("de.bebauer.webflux.handler.dsl", "ResponseBuilderCompleteOperation")
     val monoBodyCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "MonoBodyCompleteOperation")
     val valueCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "ValueCompleteOperation")
 
@@ -40,7 +41,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                         )
                     ).defaultValue(CodeBlock.of("{ build() }")).build()
                 )
-                .returns(finalCompleteOperation)
+                .returns(responseBuilderCompleteOperation)
                 .addStatement("return complete(%T.$status, init)", httpStatus)
                 .build()
         )
@@ -99,7 +100,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                         KModifier.NOINLINE
                     ).defaultValue("{ this }").build()
                 )
-                .returns(finalCompleteOperation)
+                .returns(responseBuilderCompleteOperation)
                 .addStatement("return complete(%T.$status, flux, builderInit)", httpStatus)
                 .build()
         )
@@ -220,7 +221,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                         LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder)
                     ).defaultValue("{ this }").build()
                 )
-                .returns(finalCompleteOperation)
+                .returns(responseBuilderCompleteOperation)
                 .addStatement("return complete(%T.$status, inserter, builderInit)", httpStatus)
                 .build()
         )

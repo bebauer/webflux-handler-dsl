@@ -219,7 +219,7 @@ val String.csvParam
  */
 fun <T, U> HandlerDsl.parameter(
     parameter: QueryParameter<T, U>,
-    init: HandlerDsl.(T) -> Unit
+    init: HandlerDsl.(T) -> CompleteOperation
 ) = extractRequest { request ->
     val values = parameter.valueExtractor(request.queryParams()[parameter.name].toOption())
 
@@ -236,5 +236,5 @@ fun <T, U> HandlerDsl.parameter(
  */
 fun <T1, U1> HandlerDsl.parameters(
     parameter1: QueryParameter<T1, U1>,
-    init: HandlerDsl.(T1) -> Unit
+    init: HandlerDsl.(T1) -> CompleteOperation
 ) = this.parameter(parameter1, init)

@@ -104,7 +104,7 @@ val String.stringCookie: CookieName<List<String>, List<String>>
  *
  * @param cookie the name of the cookie as a [CookieName]
  */
-fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> Unit) = extractRequest { request ->
+fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> CompleteOperation) = extractRequest { request ->
     val values = cookie.valueExtractor(request.cookies()[cookie.name].toOption().map { v -> v.map { it.value } })
 
     when (values) {

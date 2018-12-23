@@ -10,6 +10,7 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
     val pathVariable = ClassName("de.bebauer.webflux.handler.dsl", "PathVariable")
     val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
     val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+    val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
 
     val tests = mutableListOf<String>()
 
@@ -31,13 +32,13 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
                 LambdaTypeName.get(
                     receiver = handlerDsl,
                     parameters = *(1..i).map { TypeVariableName("T$it") }.toTypedArray(),
-                    returnType = Unit::class.asClassName()
+                    returnType = completeOperation
                 )
             )
-            .returns(Unit::class.asClassName())
+            .returns(completeOperation)
             .addCode(
                 """
-                |this.pathVariables(%1L) { %2L ->
+                |return this.pathVariables(%1L) { %2L ->
                 |  this.pathVariable(variable%3L) { v%3L ->
                 |    init(%4L)
                 |  }

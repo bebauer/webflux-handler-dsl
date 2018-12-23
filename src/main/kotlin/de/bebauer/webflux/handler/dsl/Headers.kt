@@ -104,7 +104,7 @@ val <T, U> HeaderName<out List<T>, out List<U>>.single
  */
 fun <T, U> HandlerDsl.headerValue(
     header: HeaderName<T, U>,
-    init: HandlerDsl.(T) -> Unit
+    init: HandlerDsl.(T) -> CompleteOperation
 ) = extractRequest { request ->
     val values = header.valueExtractor(request.headers().header(header.name))
 

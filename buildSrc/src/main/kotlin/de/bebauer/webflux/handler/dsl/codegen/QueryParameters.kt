@@ -11,6 +11,7 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
     val queryParam = ClassName("de.bebauer.webflux.handler.dsl", "QueryParameter")
     val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
     val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+    val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
 
     val tests = mutableListOf<String>()
 
@@ -34,13 +35,13 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
                 LambdaTypeName.get(
                     receiver = handlerDsl,
                     parameters = *(1..i).map { TypeVariableName("T$it") }.toTypedArray(),
-                    returnType = Unit::class.asClassName()
+                    returnType = completeOperation
                 )
             )
-            .returns(Unit::class.asClassName())
+            .returns(completeOperation)
             .addCode(
                 """
-                |this.parameters(%1L) { %2L ->
+                |return this.parameters(%1L) { %2L ->
                 |  this.parameter(parameter%3L) { v%3L ->
                 |    init(%4L)
                 |  }
@@ -70,7 +71,8 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
             |       request = { get().uri("/test?${(1..i).map { "p$it=$it" }.joinToString("&")}") })
             |
             |}
-            """.trimMargin())
+            """.trimMargin()
+        )
     }
 
     fileBuilder.build().writeTo(outputDir)
