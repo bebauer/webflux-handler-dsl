@@ -16,11 +16,14 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     val mono = ClassName("reactor.core.publisher", "Mono")
     val flux = ClassName("reactor.core.publisher", "Flux")
     val serverResponse = ClassName("org.springframework.web.reactive.function.server", "ServerResponse")
+    val bodyBuilder = serverResponse.nestedClass("BodyBuilder")
     val httpStatus = ClassName("org.springframework.http", "HttpStatus")
-    val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
     val bodyInserter = ClassName("org.springframework.web.reactive.function", "BodyInserter")
     val serverHttpResponse = ClassName("org.springframework.http.server.reactive", "ServerHttpResponse")
     val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+    val finalCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "FinalCompleteOperation")
+    val monoBodyCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "MonoBodyCompleteOperation")
+    val valueCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "ValueCompleteOperation")
 
     val tests = LinkedMultiValueMap<String, String>()
 
@@ -32,12 +35,12 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                     ParameterSpec.builder(
                         "init",
                         LambdaTypeName.get(
-                            receiver = serverResponse.nestedClass("BodyBuilder"),
+                            receiver = bodyBuilder,
                             returnType = mono.parameterizedBy(serverResponse)
                         )
                     ).defaultValue(CodeBlock.of("{ build() }")).build()
                 )
-                .returns(completeOperation)
+                .returns(finalCompleteOperation)
                 .addStatement("return complete(%T.$status, init)", httpStatus)
                 .build()
         )
@@ -89,8 +92,15 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                     "flux",
                     flux.parameterizedBy(typeT)
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, flux)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder),
+                        KModifier.NOINLINE
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(finalCompleteOperation)
+                .addStatement("return complete(%T.$status, flux, builderInit)", httpStatus)
                 .build()
         )
 
@@ -123,8 +133,15 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                     "mono",
                     mono.parameterizedBy(typeT)
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, mono)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder),
+                        KModifier.NOINLINE
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(monoBodyCompleteOperation.parameterizedBy(typeT))
+                .addStatement("return complete(%T.$status, mono, builderInit)", httpStatus)
                 .build()
         )
 
@@ -157,8 +174,15 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                     "value",
                     typeT.copy(nullable = true)
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, value)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder),
+                        KModifier.NOINLINE
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(valueCompleteOperation.parameterizedBy(typeT))
+                .addStatement("return complete(%T.$status, value, builderInit)", httpStatus)
                 .build()
         )
 
@@ -190,8 +214,14 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                         WildcardTypeName.consumerOf(serverHttpResponse)
                     )
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, inserter)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder)
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(finalCompleteOperation)
+                .addStatement("return complete(%T.$status, inserter, builderInit)", httpStatus)
                 .build()
         )
 

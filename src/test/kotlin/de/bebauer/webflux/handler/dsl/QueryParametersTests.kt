@@ -34,7 +34,7 @@ class QueryParametersTests : WordSpec() {
                         listOf(9, 8, 7)
                     )
                 ) { v1, v2, v3, v4, v5, v6, v7, v8 ->
-                    complete {
+                    ok {
                         body(fromObject("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8"))
                     }
                 }
@@ -80,7 +80,7 @@ class QueryParametersTests : WordSpec() {
                 val router = router {
                     GET("/blah", handler {
                         parameter("test".csvParam) { test ->
-                            complete {
+                            ok {
                                 contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
                             }
                         }
@@ -103,7 +103,7 @@ class QueryParametersTests : WordSpec() {
                 val router = router {
                     GET("/blah", handler {
                         parameter("test".csvParam(String::toInt)) { test ->
-                            complete {
+                            ok {
                                 contentType(MediaType.APPLICATION_JSON).body(test.toFlux(), Int::class.java)
                             }
                         }
@@ -254,7 +254,7 @@ class QueryParametersTests : WordSpec() {
         runHandlerTest(
             handler {
                 parameter(testConfig.first) { test ->
-                    complete(test.toString())
+                    ok(test.toString())
                 }
             },
             {

@@ -1,5 +1,6 @@
 package de.bebauer.webflux.handler.dsl
 
+import arrow.core.*
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -22,54 +23,36 @@ import reactor.core.publisher.Mono
  *
  * @see HandlerDsl
  */
-fun handler(init: HandlerDsl.() -> Unit): (ServerRequest) -> Mono<ServerResponse> = { request ->
+fun <T : CompleteOperation> handler(init: HandlerDsl<T>.() -> T): (ServerRequest) -> Mono<ServerResponse> = { request ->
     Mono.just(HandlerDsl(request, init))
         .flatMap { dsl ->
             dsl.invoke(ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).body(fromObject("Missing DSL.")))
         }
 }
 
-
-class CompleteOperation(internal val response: Mono<ServerResponse>)
-
 /**
  * Provide a `(ServerRequest) -> Mono<out ServerResponse>` Kotlin DSL in order to be able to write idiomatic Kotlin code.
  */
-open class HandlerDsl(
+open class HandlerDsl<T : CompleteOperation>(
     private val request: ServerRequest,
-    private val init: HandlerDsl.() -> Unit
-) : (Mono<ServerResponse>) -> Mono<ServerResponse> {
+    private val init: HandlerDsl<T>.() -> T
+) : () -> T {
 
-    private var completion: Mono<CompleteOperation> = Mono.empty()
+    private var completion: Option<CompleteOperation> = None
 
-    /**
-     * Combines two complete operations with <code>or</code>.
-     *
-     * @param other the other [CompleteOperation]
-     */
-    infix fun CompleteOperation.or(other: CompleteOperation): CompleteOperation {
-        return updateCompleteOperation(CompleteOperation(this.response.switchIfEmpty(other.response)), true)
-    }
-
-    private fun updateCompleteOperation(
-        completeOperation: CompleteOperation,
-        allowReplace: Boolean = false
-    ): CompleteOperation {
+    fun <T : CompleteOperation> complete(op: T): T {
         completion = completion.map {
-            when (allowReplace) {
-                true -> completeOperation
-                false -> CompleteOperation(
-                    Mono.error(
-                        ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            "Response is already set."
-                        )
+            ResponseCompleteOperation(
+                Mono.error(
+                    ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Response is already set."
                     )
                 )
-            }
-        }.defaultIfEmpty(completeOperation)
+            )
+        }.orElse { Some(op) }
 
-        return completeOperation
+        return op
     }
 
     /**
@@ -77,8 +60,8 @@ open class HandlerDsl(
      *
      * @param response the [ServerResponse] Mono
      */
-    fun complete(response: Mono<ServerResponse>): CompleteOperation {
-        return updateCompleteOperation(CompleteOperation(response))
+    fun complete(response: Mono<ServerResponse>): ResponseCompleteOperation {
+        return complete(ResponseCompleteOperation(response))
     }
 
     /**
@@ -110,7 +93,7 @@ open class HandlerDsl(
         return handler(init)(request)
     }
 
-    override fun invoke(input: Mono<ServerResponse>): Mono<ServerResponse> {
+    override fun invoke(): Mono<ServerResponse> {
         return input
             .map {
                 init()
@@ -118,15 +101,14 @@ open class HandlerDsl(
             .flatMap {
                 completion
                     .map { c -> c.response }
-                    .switchIfEmpty(
-                        Mono.error<Mono<ServerResponse>>(
+                    .getOrElse {
+                        Mono.error(
                             ResponseStatusException(
                                 HttpStatus.INTERNAL_SERVER_ERROR,
                                 "Incomplete DSL."
                             )
                         )
-                    )
+                    }
             }
-            .flatMap { it }
     }
 }

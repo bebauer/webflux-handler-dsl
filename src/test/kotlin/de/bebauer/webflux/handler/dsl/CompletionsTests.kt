@@ -12,52 +12,10 @@ import reactor.core.publisher.Mono
 
 class CompletionsTests : WordSpec({
     "complete" should {
-        "terminate the handler with status OK and without a body" {
-            runHandlerTest(handler {
-                complete()
-            }, { expectStatus().isOk.expectBody().isEmpty })
-        }
-
         "terminate the handler with the specified status and without a body" {
             runHandlerTest(handler {
                 complete(HttpStatus.UNAUTHORIZED)
             }, { expectStatus().isUnauthorized.expectBody().isEmpty })
-        }
-
-        "terminate the handler with status OK and with a body from the specified Mono" {
-            runHandlerTest(
-                handler {
-                    complete(Mono.just("xxx"))
-                },
-                {
-                    expectStatus().isOk
-                        .expectBody(String::class.java)
-                        .returnResult().responseBody shouldBe "xxx"
-                })
-        }
-
-        "terminate the handler with status OK and with a body from the specified Flux" {
-            runHandlerTest(
-                handler {
-                    complete(Flux.fromIterable(listOf(1, 2)))
-                },
-                {
-                    expectStatus().isOk
-                        .expectBodyList(Int::class.java)
-                        .returnResult().responseBody should containExactly(1, 2)
-                })
-        }
-
-        "terminate the handler with status OK and with a body from the specified value" {
-            runHandlerTest(
-                handler {
-                    complete("xxx")
-                },
-                {
-                    expectStatus().isOk
-                        .expectBody(String::class.java)
-                        .returnResult().responseBody shouldBe "xxx"
-                })
         }
 
         "terminate the handler with the specified status and with a body from the specified Mono" {
@@ -96,24 +54,6 @@ class CompletionsTests : WordSpec({
                 })
         }
 
-        "terminate the handler with status OK and the response from the specified builder" {
-            runHandlerTest(
-                handler {
-                    complete {
-                        contentType(MediaType.APPLICATION_JSON)
-                        header("xxx", "abc")
-                        body(fromObject("123"))
-                    }
-                },
-                {
-                    expectStatus().isOk
-                        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                        .expectHeader().valueEquals("xxx", "abc")
-                        .expectBody(String::class.java)
-                        .returnResult().responseBody shouldBe "123"
-                })
-        }
-
         "terminate the handler with the specified status and the response from the specified builder" {
             runHandlerTest(
                 handler {
@@ -127,18 +67,6 @@ class CompletionsTests : WordSpec({
                     expectStatus().isUnauthorized
                         .expectHeader().contentType(MediaType.APPLICATION_JSON)
                         .expectHeader().valueEquals("xxx", "abc")
-                        .expectBody(String::class.java)
-                        .returnResult().responseBody shouldBe "123"
-                })
-        }
-
-        "terminate the handler with status OK and the response from the specified BodyInserter" {
-            runHandlerTest(
-                handler {
-                    complete(fromObject("123"))
-                },
-                {
-                    expectStatus().isOk
                         .expectBody(String::class.java)
                         .returnResult().responseBody shouldBe "123"
                 })

@@ -21,8 +21,8 @@ class HandlerDslTests : WordSpec({
 
         "fail with multiple completes" {
             runHandlerTest(handler {
-                complete("xxx")
-                complete("abc")
+                ok("xxx")
+                ok("abc")
             }, { expectStatus().is5xxServerError })
         }
 
@@ -30,7 +30,7 @@ class HandlerDslTests : WordSpec({
             forall(row("a"), row("b")) { value ->
                 runHandlerTest(
                     handler {
-                        if (value == "a") complete("a") else complete("b")
+                        if (value == "a") ok("a") else ok("b")
                     },
                     {
                         expectStatus().isOk
@@ -44,7 +44,7 @@ class HandlerDslTests : WordSpec({
             runHandlerTest(
                 handler {
                     val result = execute {
-                        complete("Test")
+                        ok("Test")
                     }
 
                     complete(result.flatMap { ServerResponse.from(it).body(fromObject("Yay!")) })
@@ -75,7 +75,7 @@ class HandlerDslTests : WordSpec({
         "complete with the first non empty completion in a chain (last)" {
             runHandlerTest(
                 handler {
-                    complete(Mono.empty()) or complete(Mono.empty<String>()) or complete(HttpStatus.NOT_FOUND, "Test")
+                    ok(Mono.empty<String>()) or ok(Mono.empty<String>()) or complete(HttpStatus.NOT_FOUND, "Test")
                 },
                 {
                     expectStatus().isNotFound.expectBody(String::class.java).returnResult()
@@ -86,7 +86,7 @@ class HandlerDslTests : WordSpec({
         "complete with the first non empty completion in a chain (first)" {
             runHandlerTest(
                 handler {
-                    complete("1") or complete(HttpStatus.NOT_FOUND, "1")
+                    ok("1") or complete(HttpStatus.NOT_FOUND, "1")
                 },
                 {
                     expectStatus().isOk.expectBody(String::class.java).returnResult()
@@ -97,7 +97,7 @@ class HandlerDslTests : WordSpec({
         "allow failWith in a completions chain" {
             runHandlerTest(
                 handler {
-                    complete(Mono.empty()) or failWith("Error!")
+                    ok(Mono.empty<String>()) or failWith("Error!")
                 },
                 {
                     expectStatus().is5xxServerError

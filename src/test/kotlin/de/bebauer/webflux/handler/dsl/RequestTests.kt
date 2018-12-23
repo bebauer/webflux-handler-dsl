@@ -10,7 +10,7 @@ class RequestTests : WordSpec({
             runHandlerTest(
                 handler {
                     extractRequestUri { uri ->
-                        complete(uri.toString())
+                        ok(uri.toString())
                     }
                 },
                 {
@@ -27,7 +27,7 @@ class RequestTests : WordSpec({
             runHandlerTest(
                 handler {
                     extractHost { host ->
-                        complete(host)
+                        ok(host)
                     }
                 },
                 {
@@ -44,7 +44,7 @@ class RequestTests : WordSpec({
             runHandlerTest(
                 handler {
                     extractScheme { scheme ->
-                        complete(scheme)
+                        ok(scheme)
                     }
                 },
                 {

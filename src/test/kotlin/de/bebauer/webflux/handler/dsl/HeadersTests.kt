@@ -123,7 +123,7 @@ class HeadersTests : WordSpec() {
         val router = router {
             GET("/test", handler {
                 headerValue(header) { value ->
-                    complete {
+                    ok {
                         body(BodyInserters.fromObject(value.toString()))
                     }
                 }
@@ -154,7 +154,7 @@ class HeadersTests : WordSpec() {
                 val router = router {
                     GET("/test", handler {
                         headerValue(Headers.Accept.single.optional) { accept ->
-                            complete {
+                            ok {
                                 body(BodyInserters.fromObject(accept.toString()))
                             }
                         }
@@ -170,7 +170,7 @@ class HeadersTests : WordSpec() {
                 val router = router {
                     GET("/test", handler {
                         headerValue(Headers.AccessControlMaxAge.single.optional) { accept ->
-                            complete {
+                            ok {
                                 body(BodyInserters.fromObject(accept.toString()))
                             }
                         }
@@ -186,7 +186,7 @@ class HeadersTests : WordSpec() {
                 val router = router {
                     GET("/test", handler {
                         headerValue(Headers.AccessControlMaxAge.single.optional("xxx")) { accept ->
-                            complete {
+                            ok {
                                 body(BodyInserters.fromObject(accept))
                             }
                         }
@@ -202,7 +202,7 @@ class HeadersTests : WordSpec() {
                 val router = router {
                     GET("/test", handler {
                         headerValue(Headers.AccessControlMaxAge.single) { accept ->
-                            complete {
+                            ok {
                                 body(BodyInserters.fromObject(accept))
                             }
                         }

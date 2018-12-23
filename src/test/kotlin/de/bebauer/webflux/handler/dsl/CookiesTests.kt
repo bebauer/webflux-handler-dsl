@@ -9,7 +9,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie) { (test) ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 {
@@ -22,7 +22,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie) { (test) ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 { expectStatus().isBadRequest })
@@ -32,7 +32,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.optional) { test ->
-                        complete(test.toString())
+                        ok(test.toString())
                     }
                 },
                 {
@@ -45,7 +45,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.optional) { test ->
-                        complete(test.toString())
+                        ok(test.toString())
                     }
                 },
                 {
@@ -57,7 +57,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 {
@@ -70,7 +70,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.optional(listOf("abc"))) { (test) ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 {
@@ -82,7 +82,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.single) { test ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 {
@@ -95,7 +95,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.single) { test ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 {
@@ -107,7 +107,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.single.optional) { test ->
-                        complete(test.toString())
+                        ok(test.toString())
                     }
                 },
                 {
@@ -120,7 +120,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.single.optional) { test ->
-                        complete(test.toString())
+                        ok(test.toString())
                     }
                 },
                 {
@@ -132,7 +132,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.single.optional("abc")) { test ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 {
@@ -145,7 +145,7 @@ class CookiesTests : WordSpec({
             runHandlerTest(
                 handler {
                     cookie("test".stringCookie.single.optional("abc")) { test ->
-                        complete(test)
+                        ok(test)
                     }
                 },
                 {

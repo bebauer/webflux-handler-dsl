@@ -86,7 +86,7 @@ class PathVariablesTests : WordSpec() {
                             "test2".stringVar,
                             "test3".stringVar
                         ) { test1, test2, test3 ->
-                            complete {
+                            ok {
                                 contentType(MediaType.APPLICATION_JSON)
                                 body(BodyInserters.fromObject(listOf(test1, test2, test3)))
                             }
@@ -105,7 +105,7 @@ class PathVariablesTests : WordSpec() {
                 runHandlerTest(
                     handler {
                         pathVariables("test".intVar) { test ->
-                            complete(test)
+                            ok(test)
                         }
                     },
                     {
@@ -124,7 +124,7 @@ class PathVariablesTests : WordSpec() {
         runHandlerTest(
             handler {
                 pathVariable("test".variable()) { test ->
-                    complete(test.toString())
+                    ok(test.toString())
                 }
             },
             {

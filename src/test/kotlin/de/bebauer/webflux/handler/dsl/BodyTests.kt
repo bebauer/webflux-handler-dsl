@@ -16,7 +16,7 @@ class BodyTests : WordSpec() {
                 runHandlerTest(
                     handler {
                         extractRequestBodyToMono<Entity> { body ->
-                            complete(body)
+                            ok(body)
                         }
                     },
                     {
@@ -36,7 +36,7 @@ class BodyTests : WordSpec() {
                 runHandlerTest(
                     handler {
                         extractRequestBodyToFlux<Entity> { body ->
-                            complete(body)
+                            ok(body)
                         }
                     },
                     {
@@ -54,7 +54,7 @@ class BodyTests : WordSpec() {
                 runHandlerTest(
                     handler {
                         extractRequestBody(BodyExtractors.toMono(Entity::class.java)) { body ->
-                            complete(body)
+                            ok(body)
                         }
                     },
                     {
@@ -70,7 +70,7 @@ class BodyTests : WordSpec() {
                 runHandlerTest(
                     handler {
                         extractRequestBody(BodyExtractors.toMono(Entity::class.java), mapOf()) { body ->
-                            complete(body)
+                            ok(body)
                         }
                     },
                     {
