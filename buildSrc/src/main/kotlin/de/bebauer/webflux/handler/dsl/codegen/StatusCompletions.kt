@@ -12,32 +12,34 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     val statusList =
         listOf("OK", "NOT_FOUND", "BAD_REQUEST", "FORBIDDEN", "INTERNAL_SERVER_ERROR", "UNAUTHORIZED", "CREATED")
 
-    val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
     val mono = ClassName("reactor.core.publisher", "Mono")
     val flux = ClassName("reactor.core.publisher", "Flux")
     val serverResponse = ClassName("org.springframework.web.reactive.function.server", "ServerResponse")
+    val bodyBuilder = serverResponse.nestedClass("BodyBuilder")
     val httpStatus = ClassName("org.springframework.http", "HttpStatus")
-    val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
     val bodyInserter = ClassName("org.springframework.web.reactive.function", "BodyInserter")
     val serverHttpResponse = ClassName("org.springframework.http.server.reactive", "ServerHttpResponse")
     val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+    val responseBuilderCompleteOperation =
+        ClassName("de.bebauer.webflux.handler.dsl", "ResponseBuilderCompleteOperation")
+    val monoBodyCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "MonoBodyCompleteOperation")
+    val valueCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "ValueCompleteOperation")
 
     val tests = LinkedMultiValueMap<String, String>()
 
     fun generateWithBuilder(status: String) {
         srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
-                .receiver(handlerDsl)
                 .addParameter(
                     ParameterSpec.builder(
                         "init",
                         LambdaTypeName.get(
-                            receiver = serverResponse.nestedClass("BodyBuilder"),
+                            receiver = bodyBuilder,
                             returnType = mono.parameterizedBy(serverResponse)
                         )
                     ).defaultValue(CodeBlock.of("{ build() }")).build()
                 )
-                .returns(completeOperation)
+                .returns(responseBuilderCompleteOperation)
                 .addStatement("return complete(%T.$status, init)", httpStatus)
                 .build()
         )
@@ -84,13 +86,19 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
             FunSpec.builder(status.underscoreToCamelCase())
                 .addModifiers(KModifier.INLINE)
                 .addTypeVariable(typeT.copy(reified = true))
-                .receiver(handlerDsl)
                 .addParameter(
                     "flux",
                     flux.parameterizedBy(typeT)
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, flux)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder),
+                        KModifier.NOINLINE
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(responseBuilderCompleteOperation)
+                .addStatement("return complete(%T.$status, flux, builderInit)", httpStatus)
                 .build()
         )
 
@@ -99,10 +107,13 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 "complete with 'Flux'" {
                     runHandlerTest(
                         handler {
-                            ${status.underscoreToCamelCase()}(Flux.fromIterable(listOf(1, 2, 3)))
+                            ${status.underscoreToCamelCase()}(Flux.fromIterable(listOf(1, 2, 3))) {
+                                header("test", "xyz")
+                            }
                         },
                         {
                             expectStatus().${status.statusToCheck()}
+                                .expectHeader().value("test") { it shouldBe "xyz" }
                                 .expectBodyList(Int::class.java)
                                 .returnResult().responseBody should containExactly(1, 2, 3)
                         })
@@ -118,13 +129,19 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
             FunSpec.builder(status.underscoreToCamelCase())
                 .addModifiers(KModifier.INLINE)
                 .addTypeVariable(typeT.copy(reified = true))
-                .receiver(handlerDsl)
                 .addParameter(
                     "mono",
                     mono.parameterizedBy(typeT)
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, mono)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder),
+                        KModifier.NOINLINE
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(monoBodyCompleteOperation.parameterizedBy(typeT))
+                .addStatement("return complete(%T.$status, mono, builderInit)", httpStatus)
                 .build()
         )
 
@@ -133,10 +150,13 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 "complete with 'Mono'" {
                     runHandlerTest(
                         handler {
-                            ${status.underscoreToCamelCase()}(Mono.just(123))
+                            ${status.underscoreToCamelCase()}(Mono.just(123)) {
+                                header("test", "xyz")
+                            }
                         },
                         {
                             expectStatus().${status.statusToCheck()}
+                                .expectHeader().value("test") { it shouldBe "xyz" }
                                 .expectBody(Int::class.java)
                                 .returnResult().responseBody shouldBe 123
                         })
@@ -150,15 +170,19 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
 
         srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
-                .addModifiers(KModifier.INLINE)
-                .addTypeVariable(typeT.copy(reified = true))
-                .receiver(handlerDsl)
+                .addTypeVariable(typeT)
                 .addParameter(
                     "value",
                     typeT.copy(nullable = true)
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, value)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder)
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(valueCompleteOperation.parameterizedBy(typeT))
+                .addStatement("return complete(%T.$status, value, builderInit)", httpStatus)
                 .build()
         )
 
@@ -167,10 +191,13 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 "complete with value" {
                     runHandlerTest(
                         handler {
-                            ${status.underscoreToCamelCase()}("123")
+                            ${status.underscoreToCamelCase()}("123") {
+                                header("test", "xyz")
+                            }
                         },
                         {
                             expectStatus().${status.statusToCheck()}
+                                .expectHeader().value("test") { it shouldBe "xyz" }
                                 .expectBody(String::class.java)
                                 .returnResult().responseBody shouldBe "123"
                         })
@@ -182,7 +209,6 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     fun generateWithBodyInserter(status: String) {
         srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
-                .receiver(handlerDsl)
                 .addParameter(
                     "inserter",
                     bodyInserter.parameterizedBy(
@@ -190,8 +216,14 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                         WildcardTypeName.consumerOf(serverHttpResponse)
                     )
                 )
-                .returns(completeOperation)
-                .addStatement("return complete(%T.$status, inserter)", httpStatus)
+                .addParameter(
+                    ParameterSpec.builder(
+                        "builderInit",
+                        LambdaTypeName.get(receiver = bodyBuilder, returnType = bodyBuilder)
+                    ).defaultValue("{ this }").build()
+                )
+                .returns(responseBuilderCompleteOperation)
+                .addStatement("return complete(%T.$status, inserter, builderInit)", httpStatus)
                 .build()
         )
 
@@ -200,10 +232,13 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 "complete with body inserter" {
                     runHandlerTest(
                         handler {
-                            ${status.underscoreToCamelCase()}(fromObject("123"))
+                            ${status.underscoreToCamelCase()}(fromObject("123")) {
+                                header("test", "xyz")
+                            }
                         },
                         {
                             expectStatus().${status.statusToCheck()}
+                                .expectHeader().value("test") { it shouldBe "xyz" }
                                 .expectBody(String::class.java)
                                 .returnResult().responseBody shouldBe "123"
                         })

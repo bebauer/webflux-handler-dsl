@@ -21,7 +21,7 @@ data class Timeout(val value: Long, val unit: TimeUnit) {
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
  */
-fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, init: HandlerDsl.(Try<T>) -> Unit) =
+fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, init: HandlerDsl.(Try<T>) -> CompleteOperation) =
     onComplete(future, Option.empty<Timeout>(), init)
 
 /**
@@ -31,7 +31,11 @@ fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, init: HandlerDsl.(Tr
  * @param future the future
  * @param timeout the timeout for the future as a [Duration]
  */
-fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, timeout: Duration, init: HandlerDsl.(Try<T>) -> Unit) =
+fun <T> HandlerDsl.onComplete(
+    future: CompletableFuture<T>,
+    timeout: Duration,
+    init: HandlerDsl.(Try<T>) -> CompleteOperation
+) =
     onComplete(future, timeout.toOption(), init)
 
 /**
@@ -41,7 +45,11 @@ fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, timeout: Duration, i
  * @param future the future
  * @param timeout the timeout for the future as a [Timeout]
  */
-fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, timeout: Timeout, init: HandlerDsl.(Try<T>) -> Unit) =
+fun <T> HandlerDsl.onComplete(
+    future: CompletableFuture<T>,
+    timeout: Timeout,
+    init: HandlerDsl.(Try<T>) -> CompleteOperation
+) =
     onComplete(future, timeout.toOption(), init)
 
 /**
@@ -55,7 +63,7 @@ fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, timeout: Timeout, in
 fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Option<Duration>,
-    init: HandlerDsl.(Try<T>) -> Unit
+    init: HandlerDsl.(Try<T>) -> CompleteOperation
 ) =
     onComplete(future, timeout.map { Timeout.of(it) }, init)
 
@@ -70,8 +78,8 @@ fun <T> HandlerDsl.onComplete(
 fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Option<Timeout>,
-    init: HandlerDsl.(Try<T>) -> Unit
-) {
+    init: HandlerDsl.(Try<T>) -> CompleteOperation
+) =
     complete(Mono.fromFuture(timeout.map {
         future.orTimeout(
             it.value,
@@ -80,7 +88,6 @@ fun <T> HandlerDsl.onComplete(
     }.getOrElse { future }.thenApply<Try<T>> { Success(it) })
         .onErrorResume { Mono.just(Failure(it.cause ?: it)) }
         .flatMap { value -> execute { init(value) } })
-}
 
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful, waiting indefinitely.
@@ -89,7 +96,7 @@ fun <T> HandlerDsl.onComplete(
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
  */
-fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, init: HandlerDsl.(T) -> Unit) =
+fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, init: HandlerDsl.(T) -> CompleteOperation) =
     onSuccess(future, Option.empty<Timeout>(), init)
 
 /**
@@ -101,7 +108,11 @@ fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, init: HandlerDsl.(T) 
  * @param future the future
  * @param timeout the timeout for the future as a [Duration]
  */
-fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, timeout: Duration, init: HandlerDsl.(T) -> Unit) =
+fun <T> HandlerDsl.onSuccess(
+    future: CompletableFuture<T>,
+    timeout: Duration,
+    init: HandlerDsl.(T) -> CompleteOperation
+) =
     onSuccess(future, timeout.toOption(), init)
 
 /**
@@ -113,7 +124,11 @@ fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, timeout: Duration, in
  * @param future the future
  * @param timeout the timeout for the future as a [Timeout]
  */
-fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, timeout: Timeout, init: HandlerDsl.(T) -> Unit) =
+fun <T> HandlerDsl.onSuccess(
+    future: CompletableFuture<T>,
+    timeout: Timeout,
+    init: HandlerDsl.(T) -> CompleteOperation
+) =
     onSuccess(future, timeout.toOption(), init)
 
 /**
@@ -126,7 +141,11 @@ fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, timeout: Timeout, ini
  * @param timeout the timeout for the future as a [Option] of [Duration]
  */
 @JvmName("onSuccessDuration")
-fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, timeout: Option<Duration>, init: HandlerDsl.(T) -> Unit) =
+fun <T> HandlerDsl.onSuccess(
+    future: CompletableFuture<T>,
+    timeout: Option<Duration>,
+    init: HandlerDsl.(T) -> CompleteOperation
+) =
     onSuccess(future, timeout.map { Timeout.of(it) }, init)
 
 /**
@@ -139,7 +158,11 @@ fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, timeout: Option<Durat
  * @param timeout the timeout for the future as a [Option] of [Duration]
  */
 @JvmName("onSuccessTimeout")
-fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, timeout: Option<Timeout>, init: HandlerDsl.(T) -> Unit) =
+fun <T> HandlerDsl.onSuccess(
+    future: CompletableFuture<T>,
+    timeout: Option<Timeout>,
+    init: HandlerDsl.(T) -> CompleteOperation
+) =
     onComplete(future, timeout) { result ->
         when (result) {
             is Try.Success -> init(result.value)

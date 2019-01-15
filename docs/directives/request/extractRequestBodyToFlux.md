@@ -4,7 +4,8 @@
 
 ```kotlin
 inline fun <reified T> HandlerDsl.extractRequestBodyToFlux(
-    crossinline init: HandlerDsl.(Flux<T>) -> Unit)
+    crossinline init: HandlerDsl.(Flux<T>) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

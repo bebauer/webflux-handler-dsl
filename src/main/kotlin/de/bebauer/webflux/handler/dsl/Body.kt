@@ -11,7 +11,10 @@ import reactor.core.publisher.Mono
  * @param <T> the type of the body returned
  * @param extractor the {@code BodyExtractor} that reads from the request
  */
-fun <T> HandlerDsl.extractRequestBody(extractor: BodyExtractor<T, in ServerHttpRequest>, init: HandlerDsl.(T) -> Unit) =
+fun <T> HandlerDsl.extractRequestBody(
+    extractor: BodyExtractor<T, in ServerHttpRequest>,
+    init: HandlerDsl.(T) -> CompleteOperation
+) =
     extractRequest { request ->
         init(request.body(extractor))
     }
@@ -26,7 +29,7 @@ fun <T> HandlerDsl.extractRequestBody(extractor: BodyExtractor<T, in ServerHttpR
 fun <T> HandlerDsl.extractRequestBody(
     extractor: BodyExtractor<T, in ServerHttpRequest>,
     hints: Map<String, Any>,
-    init: HandlerDsl.(T) -> Unit
+    init: HandlerDsl.(T) -> CompleteOperation
 ) = extractRequest { request ->
     init(request.body(extractor, hints))
 }
@@ -36,7 +39,7 @@ fun <T> HandlerDsl.extractRequestBody(
  *
  * @param T the element type
  */
-inline fun <reified T> HandlerDsl.extractRequestBodyToMono(crossinline init: HandlerDsl.(Mono<T>) -> Unit) =
+inline fun <reified T> HandlerDsl.extractRequestBodyToMono(crossinline init: HandlerDsl.(Mono<T>) -> CompleteOperation) =
     extractRequest { request ->
         init(request.bodyToMono(T::class.java))
     }
@@ -46,7 +49,7 @@ inline fun <reified T> HandlerDsl.extractRequestBodyToMono(crossinline init: Han
  *
  * @param T the element type
  */
-inline fun <reified T> HandlerDsl.extractRequestBodyToFlux(crossinline init: HandlerDsl.(Flux<T>) -> Unit) =
+inline fun <reified T> HandlerDsl.extractRequestBodyToFlux(crossinline init: HandlerDsl.(Flux<T>) -> CompleteOperation) =
     extractRequest { request ->
         init(request.bodyToFlux(T::class.java))
     }

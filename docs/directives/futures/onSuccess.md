@@ -5,27 +5,32 @@
 ```kotlin
 fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : ResponseCompleteOperation
 
 fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>, 
     timeout: Duration, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : ResponseCompleteOperation
 
 fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>, 
     timeout: Timeout, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : ResponseCompleteOperation
 
 fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>, 
     timeout: Option<Duration>, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : ResponseCompleteOperation
 
 fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>, 
     timeout: Option<Timeout>, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : ResponseCompleteOperation
 ```
 
 ## Description

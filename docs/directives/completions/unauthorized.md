@@ -3,16 +3,28 @@
 ## Signature
 
 ```kotlin
-fun <T> HandlerDsl.unauthorized(value: T?)
+fun <T> unauthorized(
+    value: T?, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ValueCompleteOperation<T>
 
-inline fun <reified T> HandlerDsl.unauthorized(flux: Flux<T>)
+inline fun <reified T> unauthorized(
+    flux: Flux<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 
-inline fun <reified T> HandlerDsl.unauthorized(mono: Mono<T>)
+inline fun <reified T> unauthorized(
+    mono: Mono<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): MonoBodyCompleteOperation<T>
 
-fun HandlerDsl.unauthorized(
-    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>)
+fun unauthorized(init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse> = { build() }):
+    ResponseBuilderCompleteOperation
 
-fun HandlerDsl.unauthorized(inserter: BodyInserter<*, in ServerHttpResponse>)
+fun unauthorized(
+    inserter: BodyInserter<*, in ServerHttpResponse>, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 ```
 
 ## Description

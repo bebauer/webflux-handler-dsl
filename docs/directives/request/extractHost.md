@@ -3,7 +3,8 @@
 ## Signature
 
 ```kotlin
-fun HandlerDsl.extractHost(init: HandlerDsl.(String) -> Unit)
+fun HandlerDsl.extractHost(init: HandlerDsl.(String) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

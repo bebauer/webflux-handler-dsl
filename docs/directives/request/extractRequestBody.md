@@ -5,12 +5,14 @@
 ```kotlin
 fun <T> HandlerDsl.extractRequestBody(
     extractor: BodyExtractor<T, in ServerHttpRequest>, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : CompleteOperation
 
 fun <T> HandlerDsl.extractRequestBody(
     extractor: BodyExtractor<T, in ServerHttpRequest>,
     hints: Map<String, Any>,
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

@@ -8,6 +8,7 @@ import pl.allegro.tech.build.axion.release.domain.hooks.HooksConfig
 
 plugins {
     kotlin("jvm") version "1.3.10"
+    kotlin("kapt") version "1.3.10"
     id("com.jfrog.bintray") version "1.8.4"
     `maven-publish`
     `project-report`
@@ -38,7 +39,7 @@ scmVersion {
 }
 
 val springVersion = "5.1.2.RELEASE"
-val jacksonVersion = "2.9.7"
+val jacksonVersion = "2.9.8"
 val jUnitPlatformConsoleVersion = "1.2.0"
 val arrowVersion = "0.8.1"
 val kotlinTestVersion = "3.1.10"
@@ -49,8 +50,6 @@ dependencies {
     implementation("io.arrow-kt:arrow-core:$arrowVersion")
     testImplementation("org.springframework:spring-test:$springVersion")
     testImplementation("org.springframework:spring-context:$springVersion")
-    // undo 1.3 workaround with next jackson kotlin version
-    testImplementation(kotlin("reflect"))
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion") {
         exclude(module = "kotlin-reflect")
     }

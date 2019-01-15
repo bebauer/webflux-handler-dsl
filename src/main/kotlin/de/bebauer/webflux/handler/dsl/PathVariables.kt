@@ -127,7 +127,7 @@ val String.uShortVar
  */
 fun <T> HandlerDsl.pathVariable(
     variable: PathVariable<T>,
-    init: HandlerDsl.(T) -> Unit
+    init: HandlerDsl.(T) -> CompleteOperation
 ) = extractRequest { request ->
     val (name, converter) = variable
 
@@ -150,5 +150,5 @@ fun <T> HandlerDsl.pathVariable(
  */
 fun <T1> HandlerDsl.pathVariables(
     variable1: PathVariable<T1>,
-    init: HandlerDsl.(T1) -> Unit
+    init: HandlerDsl.(T1) -> CompleteOperation
 ) = pathVariable(variable1, init)

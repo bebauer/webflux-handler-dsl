@@ -3,16 +3,28 @@
 ## Signature
 
 ```kotlin
-fun <T> HandlerDsl.forbidden(value: T?)
+fun <T> forbidden(
+    value: T?, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ValueCompleteOperation<T>
 
-inline fun <reified T> HandlerDsl.forbidden(flux: Flux<T>)
+inline fun <reified T> forbidden(
+    flux: Flux<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 
-inline fun <reified T> HandlerDsl.forbidden(mono: Mono<T>)
+inline fun <reified T> forbidden(
+    mono: Mono<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): MonoBodyCompleteOperation<T>
 
-fun HandlerDsl.forbidden(
-    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>)
+fun forbidden(init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse> = { build() }):
+    ResponseBuilderCompleteOperation
 
-fun HandlerDsl.forbidden(inserter: BodyInserter<*, in ServerHttpResponse>)
+fun forbidden(
+    inserter: BodyInserter<*, in ServerHttpResponse>, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 ```
 
 ## Description

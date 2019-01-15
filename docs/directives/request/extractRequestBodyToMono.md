@@ -4,7 +4,8 @@
 
 ```kotlin
 inline fun <reified T> HandlerDsl.extractRequestBodyToMono(
-    crossinline init: HandlerDsl.(Mono<T>) -> Unit)
+    crossinline init: HandlerDsl.(Mono<T>) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

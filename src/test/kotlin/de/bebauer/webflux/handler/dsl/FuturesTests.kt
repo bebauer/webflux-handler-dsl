@@ -16,7 +16,7 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.completedFuture("test")) { result ->
                         when (result) {
-                            is Try.Success -> complete(result.value)
+                            is Try.Success -> ok(result.value)
                             is Try.Failure -> failWith(result.exception)
                         }
                     }
@@ -33,8 +33,8 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.failedFuture<String>(RuntimeException("err"))) { result ->
                         when (result) {
-                            is Try.Success -> complete(result.value)
-                            is Try.Failure -> complete(result.exception.message)
+                            is Try.Success -> ok(result.value)
+                            is Try.Failure -> ok(result.exception.message)
                         }
                     }
                 },
@@ -50,7 +50,7 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.completedFuture("test"), 2.hours) { result ->
                         when (result) {
-                            is Try.Success -> complete(result.value)
+                            is Try.Success -> ok(result.value)
                             is Try.Failure -> failWith(result.exception)
                         }
                     }
@@ -66,8 +66,8 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.runAsync { Thread.sleep(5000) }, 20.milliseconds) { result ->
                         when (result) {
-                            is Try.Success -> complete(result.value)
-                            is Try.Failure -> complete(result.exception.toString())
+                            is Try.Success -> ok(result.value)
+                            is Try.Failure -> ok(result.exception.toString())
                         }
                     }
                 },
@@ -82,7 +82,7 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.completedFuture("test"), Timeout(10, TimeUnit.SECONDS)) { result ->
                         when (result) {
-                            is Try.Success -> complete(result.value)
+                            is Try.Success -> ok(result.value)
                             is Try.Failure -> failWith(result.exception)
                         }
                     }
@@ -99,7 +99,7 @@ class FuturesTests : WordSpec({
             runHandlerTest(
                 handler {
                     onSuccess(CompletableFuture.completedFuture("test")) { result ->
-                        complete(result)
+                        ok(result)
                     }
                 },
                 {
@@ -112,7 +112,7 @@ class FuturesTests : WordSpec({
             runHandlerTest(
                 handler {
                     onSuccess(CompletableFuture.failedFuture<String>(RuntimeException("err"))) { result ->
-                        complete(result)
+                        ok(result)
                     }
                 },
                 { expectStatus().is5xxServerError })
@@ -122,7 +122,7 @@ class FuturesTests : WordSpec({
             runHandlerTest(
                 handler {
                     onSuccess(CompletableFuture.completedFuture("test"), 2.hours) { result ->
-                        complete(result)
+                        ok(result)
                     }
                 },
                 {
@@ -135,7 +135,7 @@ class FuturesTests : WordSpec({
             runHandlerTest(
                 handler {
                     onSuccess(CompletableFuture.runAsync { Thread.sleep(5000) }, 20.milliseconds) { result ->
-                        complete(result)
+                        ok(result)
                     }
                 },
                 { expectStatus().is5xxServerError })
@@ -145,7 +145,7 @@ class FuturesTests : WordSpec({
             runHandlerTest(
                 handler {
                     onSuccess(CompletableFuture.completedFuture("test"), Timeout(10, TimeUnit.SECONDS)) { result ->
-                        complete(result)
+                        ok(result)
                     }
                 },
                 {
