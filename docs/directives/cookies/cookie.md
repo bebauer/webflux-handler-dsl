@@ -5,7 +5,8 @@
 ```kotlin
 fun <T, U> HandlerDsl.cookie(
     cookie: CookieName<T, U>, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

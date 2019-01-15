@@ -3,7 +3,8 @@
 # Signature
 
 ```kotlin
-fun extractRequest(init: HandlerDsl.(ServerRequest) -> Unit)
+fun extractRequest(init: HandlerDsl.(ServerRequest) -> CompleteOperation) 
+    : CompleteOperation
 ```
 
 ## Description

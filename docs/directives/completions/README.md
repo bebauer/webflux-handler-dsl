@@ -1,6 +1,6 @@
 # Completions
 
-Completions are terminating directives. These can be called only once in an execution.
+Completions create complete operations. The handler DSL has to return with a `CompleteOperation`.
 
 ```kotlin
 // ok
@@ -12,15 +12,15 @@ handler {
     }
 }
 
-// the following will fail with an internal server error
+// the following will ignore the first completion and return the second one.
 handler {
     complete("1.")
     complete("2.")
 }
 ```
 
-In the end complete will end in an `Mono<ServerResponse>`. Therefore the `or` operator can be used on completions.
-When the `Mono<ServerResponse>` is empty, the alternative completion will be returned.
+There are different types of complete operations. All those extending `ChainableCompleteOperation` can
+also fall back to other operations with the `or` operator.
 
 ```kotlin
 handler {
@@ -33,8 +33,6 @@ handler {
     // Unnecessary, because it Will always return 200 with body 123.
 }
 ```
-
-Completions can be chained indefinitely and the first non empty `Mono<ServerResponse>` will be returned.
 
 ## Directives
 

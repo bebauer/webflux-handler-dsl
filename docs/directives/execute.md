@@ -3,7 +3,7 @@
 ## Signature
 
 ```kotlin
-fun execute(init: HandlerDsl.() -> Unit)
+fun execute(init: HandlerDsl.() -> CompleteOperation)
     : Mono<ServerResponse>
 ```
 

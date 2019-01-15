@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
  * @Component
  * class MyHandler {
  *  val get = handler {
- *      complete("Hello World.")
+ *      ok("Hello World.")
  *  }
  * }
  * ```

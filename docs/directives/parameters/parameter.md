@@ -5,7 +5,8 @@
 ```kotlin
 fun <T, U> HandlerDsl.parameter(
     parameter: QueryParameter<T, U>, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

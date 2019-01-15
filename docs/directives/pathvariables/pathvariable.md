@@ -5,7 +5,8 @@
 ```kotlin
 fun <T> HandlerDsl.pathVariable(
     variable: PathVariable<T>, 
-    init: HandlerDsl.(T) -> Unit)
+    init: HandlerDsl.(T) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

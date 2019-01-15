@@ -3,16 +3,28 @@
 ## Signature
 
 ```kotlin
-fun <T> HandlerDsl.internalServerError(value: T?)
+fun <T> internalServerError(
+    value: T?, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ValueCompleteOperation<T>
 
-inline fun <reified T> HandlerDsl.internalServerError(flux: Flux<T>)
+inline fun <reified T> internalServerError(
+    flux: Flux<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 
-inline fun <reified T> HandlerDsl.internalServerError(mono: Mono<T>)
+inline fun <reified T> internalServerError(
+    mono: Mono<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): MonoBodyCompleteOperation<T>
 
-fun HandlerDsl.internalServerError(
-    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>)
+fun internalServerError(init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse> = { build() }):
+    ResponseBuilderCompleteOperation
 
-fun HandlerDsl.internalServerError(inserter: BodyInserter<*, in ServerHttpResponse>)
+fun internalServerError(
+    inserter: BodyInserter<*, in ServerHttpResponse>, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 ```
 
 ## Description

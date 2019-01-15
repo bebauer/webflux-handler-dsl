@@ -75,7 +75,7 @@ tasks.withType<KotlinCompile> {
     dependsOn(codeGen)
 
     kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict", "-Xnew-inference")
+    kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
 }
 
 val sourcesJar by tasks.registering(Jar::class) {

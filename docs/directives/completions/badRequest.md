@@ -3,16 +3,28 @@
 ## Signature
 
 ```kotlin
-fun <T> HandlerDsl.badRequest(value: T?)
+fun <T> badRequest(
+    value: T?, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ValueCompleteOperation<T>
 
-inline fun <reified T> HandlerDsl.badRequest(flux: Flux<T>)
+inline fun <reified T> badRequest(
+    flux: Flux<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 
-inline fun <reified T> HandlerDsl.badRequest(mono: Mono<T>)
+inline fun <reified T> badRequest(
+    mono: Mono<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): MonoBodyCompleteOperation<T>
 
-fun HandlerDsl.badRequest(
-    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>)
+fun badRequest(init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse> = { build() }):
+    ResponseBuilderCompleteOperation
 
-fun HandlerDsl.badRequest(inserter: BodyInserter<*, in ServerHttpResponse>)
+fun badRequest(
+    inserter: BodyInserter<*, in ServerHttpResponse>, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 ```
 
 ## Description

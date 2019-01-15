@@ -7,12 +7,14 @@
 ```kotlin
 fun <T1, U1> HandlerDsl.parameters(
     parameter1: QueryParameter<T1, U1>, 
-    init: HandlerDsl.(T1) -> Unit)
+    init: HandlerDsl.(T1) -> CompleteOperation)
+    : CompleteOperation
 
 fun <T1, U1, T2, U2> HandlerDsl.parameters(
     parameter1: QueryParameter<T1, U1>,
     parameter2: QueryParameter<T2, U2>, 
-    init: HandlerDsl.(T1, T2) -> Unit)
+    init: HandlerDsl.(T1, T2) -> CompleteOperation)
+    : CompleteOperation
 
 ...
 
@@ -20,7 +22,8 @@ fun <T1, U1, ..., T10, U10> HandlerDsl.parameters(
     parameter1: QueryParameter<T1, U1>,
     ...,
     parameter10: QueryParameter<T10, U10>, 
-    init: HandlerDsl.(T1, ..., T10) -> Unit)
+    init: HandlerDsl.(T1, ..., T10) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

@@ -21,10 +21,13 @@ class CompletionsTests : WordSpec({
         "terminate the handler with the specified status and with a body from the specified Mono" {
             runHandlerTest(
                 handler {
-                    complete(HttpStatus.UNAUTHORIZED, Mono.just("xxx"))
+                    complete(HttpStatus.UNAUTHORIZED, Mono.just("xxx")) {
+                        header("test", "xxx")
+                    }
                 },
                 {
                     expectStatus().isUnauthorized
+                        .expectHeader().value("test") { it shouldBe "xxx" }
                         .expectBody(String::class.java)
                         .returnResult().responseBody shouldBe "xxx"
                 })

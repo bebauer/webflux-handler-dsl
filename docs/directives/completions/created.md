@@ -3,16 +3,28 @@
 ## Signature
 
 ```kotlin
-fun <T> HandlerDsl.created(value: T?)
+fun <T> created(
+    value: T?, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ValueCompleteOperation<T>
 
-inline fun <reified T> HandlerDsl.created(flux: Flux<T>)
+inline fun <reified T> created(
+    flux: Flux<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 
-inline fun <reified T> HandlerDsl.created(mono: Mono<T>)
+inline fun <reified T> created(
+    mono: Mono<T>, 
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): MonoBodyCompleteOperation<T>
 
-fun HandlerDsl.created(
-    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>)
+fun created(init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse> = { build() }):
+    ResponseBuilderCompleteOperation
 
-fun HandlerDsl.created(inserter: BodyInserter<*, in ServerHttpResponse>)
+fun created(
+    inserter: BodyInserter<*, in ServerHttpResponse>, 
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 ```
 
 ## Description

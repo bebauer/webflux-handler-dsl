@@ -3,7 +3,8 @@
 ## Signature
 
 ```kotlin
-fun HandlerDsl.extractScheme(init: HandlerDsl.(String) -> Unit)
+fun HandlerDsl.extractScheme(init: HandlerDsl.(String) -> CompleteOperation)
+    : CompleteOperation
 ```
 
 ## Description

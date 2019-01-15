@@ -32,25 +32,25 @@ Then the extracted value will be of type `Optional<T>`.
 "myCookie".stringCookie.single // will extract a String
 ```
 
-### Optional Header
+### Optional Cookie
 
 ```kotlin
 "myCookie".stringCookie.optional // will extract a Option<List<String>>
 ```
 
-### Single Optional Header
+### Single Optional Cookie
 
 ```kotlin
 "myCookie".stringCookie.single.optional // will extract a Option<String>
 ```
 
-### Optional Header with Default Value
+### Optional Cookie with Default Value
 
 ```kotlin
 "myCookie".stringCookie.optional("abc") // will extract a List<String>
 ```
 
-### Single Optional Header with Default Value
+### Single Optional Cookie with Default Value
 
 ```kotlin
 "myCookie".stringCookie.single.optional("abc") // will extract a String

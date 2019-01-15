@@ -3,42 +3,38 @@
 ## Signature
 
 ```kotlin
-fun complete(response: Mono<ServerResponse>)
+fun complete(response: Mono<ServerResponse>): ResponseCompleteOperation
 
-fun HandlerDsl.complete()
+inline fun <reified T> complete(
+    status: HttpStatus,
+    flux: Flux<T>,
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 
-fun HandlerDsl.complete(status: HttpStatus)
+inline fun <reified T> complete(
+    status: HttpStatus,
+    mono: Mono<T>,
+    noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): MonoBodyCompleteOperation<T>
 
-fun <T> HandlerDsl.complete(value: T?)
-
-fun <T> HandlerDsl.complete(status: HttpStatus, value: T?)
-
-inline fun <reified T> HandlerDsl.complete(flux: Flux<T>)
-
-inline fun <reified T> HandlerDsl.complete(mono: Mono<T>)
-
-inline fun <reified T> HandlerDsl.complete(
-    status: HttpStatus, 
-    flux: Flux<T>)
-    
-inline fun <reified T> HandlerDsl.complete(
-    status: HttpStatus, 
-    mono: Mono<T>)
-
-fun HandlerDsl.complete(
-    init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>)
-
-fun HandlerDsl.complete(
+fun complete(
     status: HttpStatus,
     init: ServerResponse.BodyBuilder.() -> Mono<ServerResponse>
-)
+): ResponseBuilderCompleteOperation
 
-fun HandlerDsl.complete(inserter: BodyInserter<*, in ServerHttpResponse>)
-
-fun HandlerDsl.complete(
+fun <T> complete(
     status: HttpStatus,
-    inserter: BodyInserter<*, in ServerHttpResponse>
-)
+    value: T?,
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ValueCompleteOperation<T>
+
+fun complete(status: HttpStatus): ResponseBuilderCompleteOperation
+
+fun complete(
+    status: HttpStatus,
+    inserter: BodyInserter<*, in ServerHttpResponse>,
+    builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
+): ResponseBuilderCompleteOperation
 ```
 
 ## Examples
