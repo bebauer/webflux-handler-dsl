@@ -78,6 +78,31 @@ class CookiesTests : WordSpec({
                 })
         }
 
+        "extract set nullable cookie" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.nullable) { test ->
+                        ok(test?.toString() ?: "null")
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "[xxx]"
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
+
+        "extract missing nullable cookie as null" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.nullable) { test ->
+                        ok(test?.toString() ?: "null")
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "null"
+                })
+        }
+
         "extract single value from set cookie" {
             runHandlerTest(
                 handler {
@@ -125,6 +150,31 @@ class CookiesTests : WordSpec({
                 },
                 {
                     expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "None"
+                })
+        }
+
+        "extract single nullable value if cookie is set" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single.nullable) { test ->
+                        ok(test ?: "null")
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "xxx"
+                },
+                request = { get().uri("/test").cookie("test", "xxx") })
+        }
+
+        "extract single nullable value as null if cookie is missing" {
+            runHandlerTest(
+                handler {
+                    cookie("test".stringCookie.single.nullable) { test ->
+                        ok(test ?: "null")
+                    }
+                },
+                {
+                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "null"
                 })
         }
 

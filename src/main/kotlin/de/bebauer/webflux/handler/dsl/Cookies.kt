@@ -79,6 +79,21 @@ fun <T, U> CookieName<T, U>.optional(defaultValue: T): CookieName<T, U> = Cookie
 }
 
 /**
+ * Makes a [CookieName] nullable.
+ *
+ * @param T the type of the cookie value
+ * @param U the type of the conversion result
+ */
+val <T, U> CookieName<T, U>.nullable: CookieName<T?, U>
+    get() = CookieName(this.name, this.converter) {
+        val value = this.valueExtractor(it)
+        when (value) {
+            is Either.Left -> Right(null)
+            is Either.Right -> value
+        }
+    }
+
+/**
  * Creates a [CookieName] that only extracts the first value.
  */
 val <T, U> CookieName<out List<T>, out List<U>>.single: CookieName<U, U>

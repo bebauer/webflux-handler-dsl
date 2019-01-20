@@ -56,3 +56,15 @@ Then the extracted value will be of type `Optional<T>`.
 ```kotlin
 "myHeader".stringHeader.single.optional("abc") // will extract a String
 ```
+
+### Nullable Header
+
+```kotlin
+"myHeader".stringHeader.nullable // will extract a List<String>?
+```
+
+### Single Nullable Header
+
+```kotlin
+"myHeader".stringHeader.single.nullable // will extract a String?
+```

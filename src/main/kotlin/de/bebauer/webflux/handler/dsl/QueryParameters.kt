@@ -81,6 +81,22 @@ fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> 
         })
 
 /**
+ * Makes a [QueryParameter] nullable.
+ *
+ * @param T the type of the parameter
+ * @param U type of a single parameter
+ */
+val <T, U> QueryParameter<T, U>.nullable
+    get(): QueryParameter<T?, U> =
+            QueryParameter(this.name, this.converter, {
+                val value = this.valueExtractor(it)
+                when (value) {
+                    is Either.Left -> Right(null)
+                    is Either.Right -> value
+                }
+            })
+
+/**
  * Converts a [QueryParameter] to a repeated parameter. All occurrences of the query parameter will be extracted into a list.
  *
  * @param T the type of the parameter

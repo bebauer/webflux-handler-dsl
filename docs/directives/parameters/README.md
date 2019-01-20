@@ -77,6 +77,25 @@ or
 "query".stringParam.repeated.optional(listOf("default"))
 ```
 
+### Nullable Parameters
+
+Query parameters can also be defined as nullable, if using Kotlin nullable types if preferred to Arrow's Option. 
+To do this use the `nullable` extension property.
+
+```kotlin
+"query".stringParam.nullable
+```
+
+This will extract an `T?`.
+
+### Repeated Nullable Parameters
+
+`nullable` can also be combined with `repeated`, but `repeated` has to be called before.
+
+```kotlin
+"query".stringParam.repeated.nullable
+```
+
 ### CSV Parameters
 
 CSV parameters `(e.g. ?param=a,b,c)` can be extracted with the `csvParam` extension method / property. 

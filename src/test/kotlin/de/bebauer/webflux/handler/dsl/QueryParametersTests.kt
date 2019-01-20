@@ -32,10 +32,12 @@ class QueryParametersTests : WordSpec() {
                     "v7".intParam.repeated.optional,
                     "v8".intParam.repeated.optional(
                         listOf(9, 8, 7)
-                    )
-                ) { v1, v2, v3, v4, v5, v6, v7, v8 ->
+                    ),
+                    "v9".intParam.nullable,
+                    "v10".intParam.repeated.nullable
+                ) { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10 ->
                     ok {
-                        body(fromObject("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8"))
+                        body(fromObject("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8 - $v9 - $v10"))
                     }
                 }
             })
@@ -51,12 +53,12 @@ class QueryParametersTests : WordSpec() {
         "parameters" should {
             "extract all parameters when all are set" {
                 client.get()
-                    .uri("/blah?v1=a&v2=b&v3=3&v4=4&v5=c&v6=1&v6=2&v7=3&v7=4&v8=5&v8=6")
+                    .uri("/blah?v1=a&v2=b&v3=3&v4=4&v5=c&v6=1&v6=2&v7=3&v7=4&v8=5&v8=6&v9=7&v10=10&v10=11")
                     .exchange()
                     .expectStatus().isOk
                     .expectBody(String::class.java)
                     .returnResult()
-                    .responseBody shouldBe "a - Some(b) - 3 - Some(4) - c - [1, 2] - Some([3, 4]) - [5, 6]"
+                    .responseBody shouldBe "a - Some(b) - 3 - Some(4) - c - [1, 2] - Some([3, 4]) - [5, 6] - 7 - [10, 11]"
             }
 
             "extract the required parameters and those with default values if optional parameters are missing" {
@@ -66,7 +68,7 @@ class QueryParametersTests : WordSpec() {
                     .expectStatus().isOk
                     .expectBody(String::class.java)
                     .returnResult()
-                    .responseBody shouldBe "a - None - 3 - None - default - [1, 2] - None - [9, 8, 7]"
+                    .responseBody shouldBe "a - None - 3 - None - default - [1, 2] - None - [9, 8, 7] - null - null"
             }
 
             "fail with bad request if required parameters are missing" {
@@ -226,7 +228,11 @@ class QueryParametersTests : WordSpec() {
         OPTIONAL_MISSING_DEFAULT,
         OPTIONAL_REPEATED_SET,
         OPTIONAL_REPEATED_MISSING,
-        OPTIONAL_REPEATED_MISSING_DEFAULT;
+        OPTIONAL_REPEATED_MISSING_DEFAULT,
+        NULLABLE_SET,
+        NULLABLE_MISSING,
+        NULLABLE_REPEATED_SET,
+        NULLABLE_REPEATED_MISSING;
 
         companion object {
             val rows = TestMode.values().map { row(it) }.toTypedArray()
@@ -249,6 +255,10 @@ class QueryParametersTests : WordSpec() {
             TestMode.OPTIONAL_REPEATED_MISSING_DEFAULT -> "test".parameter().repeated.optional(listOf(value)) to listOf(
                 value
             )
+            TestMode.NULLABLE_SET -> "test".parameter().nullable to value
+            TestMode.NULLABLE_MISSING -> "test".parameter().nullable to null
+            TestMode.NULLABLE_REPEATED_SET -> "test".parameter().repeated.nullable to listOf(value)
+            TestMode.NULLABLE_REPEATED_MISSING -> "test".parameter().repeated.nullable to null
         }
 
         runHandlerTest(
@@ -264,6 +274,6 @@ class QueryParametersTests : WordSpec() {
                     .responseBody shouldBe testConfig.second.toString()
             },
             { GET("/test", it) },
-            { get().uri("/test" + if (testConfig.second is None) "" else "?test=${value.toString()}") })
+            { get().uri("/test" + if (testConfig.second is None || testConfig.second == null) "" else "?test=${value.toString()}") })
     }
 }
