@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.bebauer:webflux-handler-dsl:0.15.0'
+    implementation 'de.bebauer:webflux-handler-dsl:0.16.0'
 }
 ```
 
@@ -20,6 +20,6 @@ repositories {
 }
 
 dependencies {
-    implementation("de.bebauer:webflux-handler-dsl:0.15.0")
+    implementation("de.bebauer:webflux-handler-dsl:0.16.0")
 }
 ```
