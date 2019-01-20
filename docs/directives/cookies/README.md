@@ -55,3 +55,15 @@ Then the extracted value will be of type `Optional<T>`.
 ```kotlin
 "myCookie".stringCookie.single.optional("abc") // will extract a String
 ```
+
+### Nullable Cookie
+
+```kotlin
+"myCookie".stringCookie.nullable // will extract a List<String>?
+```
+
+### Single Nullable Cookie
+
+```kotlin
+"myCookie".stringCookie.single.nullable // will extract a String?
+```
