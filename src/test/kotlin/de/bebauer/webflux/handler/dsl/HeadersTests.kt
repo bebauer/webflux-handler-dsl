@@ -198,6 +198,38 @@ class HeadersTests : WordSpec() {
                     .returnResult().responseBody shouldBe "xxx"
             }
 
+            "extract a set nullable header value" {
+                val router = router {
+                    GET("/test", handler {
+                        headerValue(Headers.Accept.single.nullable) { accept ->
+                            ok {
+                                body(BodyInserters.fromObject(accept?.toString() ?: "null"))
+                            }
+                        }
+                    })
+                }
+
+                executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
+                    .expectBody(String::class.java)
+                    .returnResult().responseBody shouldBe MediaType.APPLICATION_JSON_VALUE
+            }
+
+            "extract a missing nullable header value as 'null'" {
+                val router = router {
+                    GET("/test", handler {
+                        headerValue(Headers.AccessControlMaxAge.single.nullable) { accept ->
+                            ok {
+                                body(BodyInserters.fromObject(accept ?: "null"))
+                            }
+                        }
+                    })
+                }
+
+                executeClient(router, HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).isOk
+                    .expectBody(String::class.java)
+                    .returnResult().responseBody shouldBe "null"
+            }
+
             "fail with bad request if a required header value is missing" {
                 val router = router {
                     GET("/test", handler {

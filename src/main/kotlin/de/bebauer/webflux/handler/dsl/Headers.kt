@@ -70,6 +70,21 @@ fun <T, U> HeaderName<T, U>.optional(defaultValue: T): HeaderName<T, U> = Header
 }
 
 /**
+ * Makes a [HeaderName] nullable.
+ *
+ * @param T the type of the header value
+ * @param U the type of the conversion result
+ */
+val <T, U> HeaderName<T, U>.nullable: HeaderName<T?, U>
+    get() = HeaderName(this.name, this.converter) {
+        val value = this.valueExtractor(it)
+        when (value) {
+            is Either.Left -> Right(null)
+            is Either.Right -> value
+        }
+    }
+
+/**
  * Creates a [HeaderName] that returns the value as a comma separated string.
  */
 val String.rawHeader
