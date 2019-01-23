@@ -2,6 +2,7 @@ package de.bebauer.webflux.handler.dsl
 
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
+import reactor.core.publisher.toMono
 
 class ValueCompleteOperationTests : WordSpec({
     "ValueCompleteOperationTests" should {
@@ -22,6 +23,19 @@ class ValueCompleteOperationTests : WordSpec({
                 handler {
                     ok("123").flatMap { _, _, _ ->
                         notFound()
+                    }
+                },
+                {
+                    expectStatus().isNotFound
+                        .expectBody().isEmpty
+                })
+        }
+
+        "flatMapMono the body" {
+            runHandlerTest(
+                handler {
+                    ok("123").flatMapMono { _, _, _ ->
+                        notFound().toMono()
                     }
                 },
                 {

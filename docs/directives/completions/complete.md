@@ -35,6 +35,10 @@ fun complete(
     inserter: BodyInserter<*, in ServerHttpResponse>,
     builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
 ): ResponseBuilderCompleteOperation
+
+fun complete(operation: Mono<out CompleteOperation>): NestedCompleteOperation
+
+fun Mono<out CompleteOperation>.toCompleteOperation(): NestedCompleteOperation
 ```
 
 ## Examples
@@ -57,6 +61,18 @@ router {
             header("created-by", "xxx")
             body(fromObject("The Item"))
         }
+    })
+}
+```
+
+```kotlin
+router {
+    GET("/", handler {
+        fetchSomeMono().map { 
+            complete(HttpStatus.OK, it)
+        }
+        .switchIfEmpty(Mono.defer { notFound().toMono() })
+        .toCompleteOperation()
     })
 }
 ```

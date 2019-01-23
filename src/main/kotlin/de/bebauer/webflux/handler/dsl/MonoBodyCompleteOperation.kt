@@ -47,4 +47,13 @@ class MonoBodyCompleteOperation<T>(
      */
     fun <U : CompleteOperation> flatMap(mapper: (HttpStatus, Mono<T>, ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder) -> U): U =
         mapper(status, mono, builderInit)
+
+    /**
+     * Flat map this operation to a [Mono] of another operation.
+     *
+     * @param U type of the new complete operation
+     * @param mapper the mapping function
+     */
+    fun <U : CompleteOperation> flatMapMono(mapper: (HttpStatus, Mono<T>, ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder) -> Mono<U>)
+            : NestedCompleteOperation<U> = NestedCompleteOperation(mapper(status, mono, builderInit))
 }
