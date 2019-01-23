@@ -97,6 +97,20 @@ fun complete(
     ResponseBuilderCompleteOperation { ServerResponse.status(status).builderInit().body(inserter) }
 
 /**
+ * Complete the handler with complete operation [Mono].
+ *
+ * @param operation the [CompleteOperation] Mono
+ */
+fun <T: CompleteOperation> complete(operation: Mono<T>): NestedCompleteOperation<T> {
+    return NestedCompleteOperation(operation)
+}
+
+/**
+ * Builds a complete operation from a complete operation [Mono].
+ */
+fun <T: CompleteOperation> Mono<T>.toCompleteOperation(): NestedCompleteOperation<T> = complete(this)
+
+/**
  * Complete the handler with the specified response.
  *
  * @param response the [ServerResponse] Mono
@@ -110,7 +124,7 @@ fun complete(response: Mono<ServerResponse>): ResponseCompleteOperation {
  *
  * @param throwable the exception that caused the failure
  */
-fun failWith(throwable: Throwable): ResponseCompleteOperation = complete(Mono.error(throwable))
+fun failWith(throwable: Throwable): ResponseCompleteOperation = complete(Mono.error<ServerResponse>(throwable))
 
 /**
  *  Fails the handler with an Internal Server Error and the specified message.

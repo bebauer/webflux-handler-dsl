@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 
 class CompletionsTests : WordSpec({
     "complete" should {
@@ -79,6 +80,32 @@ class CompletionsTests : WordSpec({
             runHandlerTest(
                 handler {
                     complete(HttpStatus.UNAUTHORIZED, fromObject("123"))
+                },
+                {
+                    expectStatus().isUnauthorized
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "123"
+                })
+        }
+
+        "terminate the handler with a nested complete operation" {
+            runHandlerTest(
+                handler {
+                    complete(complete(HttpStatus.UNAUTHORIZED, fromObject("123")).toMono())
+                },
+                {
+                    expectStatus().isUnauthorized
+                        .expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "123"
+                })
+        }
+
+        "terminate the handler with a nested complete operation by extension method" {
+            runHandlerTest(
+                handler {
+                    "123".toMono().map {
+                        complete(HttpStatus.UNAUTHORIZED, fromObject(it))
+                    }.switchIfEmpty(Mono.defer { notFound().toMono() }).toCompleteOperation()
                 },
                 {
                     expectStatus().isUnauthorized
