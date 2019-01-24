@@ -39,7 +39,7 @@ scmVersion {
     })
 }
 
-val springVersion = "5.1.2.RELEASE"
+val springVersion = "5.1.4.RELEASE"
 val jacksonVersion = "2.9.8"
 val jUnitPlatformConsoleVersion = "1.2.0"
 val arrowVersion = "0.8.1"
