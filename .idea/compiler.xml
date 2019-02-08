@@ -2,6 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="de.bebauer.webflux-handler-dsl.main" target="11" />
+      <module name="de.bebauer.webflux-handler-dsl.test" target="11" />
       <module name="webflux-handler-dsl.buildSrc.main" target="11" />
       <module name="webflux-handler-dsl.buildSrc.test" target="11" />
       <module name="webflux-handler-dsl.webflux-handler-dsl.gen" target="11" />
