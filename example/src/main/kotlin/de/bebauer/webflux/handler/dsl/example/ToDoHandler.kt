@@ -1,5 +1,6 @@
 package de.bebauer.webflux.handler.dsl.example
 
+import arrow.core.getOrElse
 import de.bebauer.webflux.handler.dsl.*
 import de.bebauer.webflux.handler.dsl.example.repository.ToDo
 import de.bebauer.webflux.handler.dsl.example.repository.ToDoRepository
@@ -11,7 +12,13 @@ import org.springframework.stereotype.Component
 class ToDoHandler(val repository: ToDoRepository) {
 
     val getAll = handler {
-        ok(repository.findAll())
+        parameter("done".booleanParam.optional) { done ->
+            done.map {
+                ok(repository.findByDone(it))
+            }.getOrElse {
+                ok(repository.findAll())
+            }
+        }
     }
 
     val create = handler {
