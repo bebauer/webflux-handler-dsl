@@ -19,6 +19,13 @@ import java.math.BigInteger
 @ExperimentalUnsignedTypes
 class QueryParametersTests : WordSpec() {
 
+    enum class TestEnum {
+        FIRST,
+        @Suppress("EnumEntryName")
+        second,
+        Third
+    }
+
     private val client: WebTestClient by lazy {
         val router = router {
             GET("/blah", handler {
@@ -216,6 +223,77 @@ class QueryParametersTests : WordSpec() {
                 forall(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::uShortParam, testMode, UShort.MAX_VALUE)
                 }
+            }
+
+            "extract a enum query parameter" {
+                forall(*TestMode.rows) { testMode ->
+                    testTypedQueryParameter({ this.enumParam() }, testMode, TestEnum.Third)
+                }
+            }
+
+            "extract uppercase string enum" {
+                runHandlerTest(
+                    handler {
+                        parameter("test".stringParam.toUpperCase.toEnum<TestEnum>()) { test ->
+                            ok(test.toString())
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult()
+                            .responseBody shouldBe "FIRST"
+                    },
+                    { GET("/test", it) },
+                    { get().uri("/test?test=fiRst") })
+            }
+
+            "extract lowercase string enum" {
+                runHandlerTest(
+                    handler {
+                        parameter("test".stringParam.toLowerCase.toEnum<TestEnum>()) { test ->
+                            ok(test.toString())
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult()
+                            .responseBody shouldBe "second"
+                    },
+                    { GET("/test", it) },
+                    { get().uri("/test?test=SEcOnD") })
+            }
+
+            "extract exact string enum" {
+                runHandlerTest(
+                    handler {
+                        parameter("test".stringParam.toEnum<TestEnum>()) { test ->
+                            ok(test.toString())
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult()
+                            .responseBody shouldBe "Third"
+                    },
+                    { GET("/test", it) },
+                    { get().uri("/test?test=Third") })
+            }
+
+            "fail extracting string enum" {
+                runHandlerTest(
+                    handler {
+                        parameter("test".stringParam.toEnum<TestEnum>()) { test ->
+                            ok(test.toString())
+                        }
+                    },
+                    {
+                        expectStatus().isBadRequest
+                    },
+                    { GET("/test", it) },
+                    { get().uri("/test?test=first") })
             }
         }
     }

@@ -29,6 +29,7 @@ Those instances can and should be created through String extensions.
 * uLongParam
 * csvParam
 * csvParam\(converter\)
+* enumParam<T>\(\)
 
 ### Example
 
@@ -100,6 +101,26 @@ This will extract an `T?`.
 
 CSV parameters `(e.g. ?param=a,b,c)` can be extracted with the `csvParam` extension method / property. 
 The extracted parameter will be of the type `List<String>`.
+
+### Mapping Values
+
+QueryParameter values can be mapped with the `map` function.
+
+```kotlin
+"query".stringParam.map { it.toInt() }
+```
+
+There are also convenient functions for string parameters.
+
+```kotlin
+"query".stringParam.toUpperCase
+
+"query".stringParam.toLowerCase
+
+"query".stringParam.toEnum<SomeEnum>()
+
+"query".stringParam.toUpperCase.toEnum<SomeEnum>()
+```
 
 ## Extending the DSL
 
