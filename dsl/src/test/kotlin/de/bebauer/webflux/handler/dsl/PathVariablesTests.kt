@@ -12,6 +12,13 @@ import java.math.BigInteger
 @ExperimentalUnsignedTypes
 class PathVariablesTests : WordSpec() {
 
+    enum class TestEnum {
+        FIRST,
+        @Suppress("EnumEntryName")
+        second,
+        Third
+    }
+
     init {
         "pathVariable" should {
             "extract string path variable" {
@@ -70,6 +77,22 @@ class PathVariablesTests : WordSpec() {
                 testTypedVariable(String::uShortVar, UShort.MAX_VALUE)
             }
 
+            "extract enum variable" {
+                testTypedVariable({ this.enumVar() }, TestEnum.Third)
+            }
+
+            "extract upper case string enum variable" {
+                testTypedVariable({ this.stringVar.toUpperCase.toEnum() }, TestEnum.FIRST, { "fiRst" })
+            }
+
+            "extract lower case string enum variable" {
+                testTypedVariable({ this.stringVar.toLowerCase.toEnum() }, TestEnum.second, { "SecOnd" })
+            }
+
+            "extract exact string enum variable" {
+                testTypedVariable({ this.stringVar.toEnum() }, TestEnum.Third)
+            }
+
             "extract custom path variable" {
                 data class Test(val x: Int) {
                     override fun toString() = x.toString()
@@ -119,7 +142,8 @@ class PathVariablesTests : WordSpec() {
 
     private inline fun <reified T> testTypedVariable(
         crossinline variable: String.() -> PathVariable<T>,
-        expectedResult: T
+        expectedResult: T,
+        crossinline value: (T) -> String = { it.toString() }
     ) {
         runHandlerTest(
             handler {
@@ -133,6 +157,6 @@ class PathVariablesTests : WordSpec() {
                     .returnResult().responseBody shouldBe expectedResult.toString()
             },
             { GET("/test/{test}", it) },
-            { get().uri("/test/${expectedResult.toString()}") })
+            { get().uri("/test/${value(expectedResult)}") })
     }
 }

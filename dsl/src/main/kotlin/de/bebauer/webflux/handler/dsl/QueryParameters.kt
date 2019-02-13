@@ -31,7 +31,13 @@ fun <T> String.queryParam(converter: (String) -> T): QueryParameter<T, T> =
         converter = converter,
         valueExtractor = {
             when (it) {
-                is Some -> Right(converter(it.t[0]))
+                is Some -> Try { converter(it.t[0]) }.toEither().mapLeft { t ->
+                    ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Invalid value for query parameter $this. Conversion failed.",
+                        t
+                    )
+                }
                 is None -> Left(
                     ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -88,13 +94,13 @@ fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> 
  */
 val <T, U> QueryParameter<T, U>.nullable
     get(): QueryParameter<T?, U> =
-            QueryParameter(this.name, this.converter, {
-                val value = this.valueExtractor(it)
-                when (value) {
-                    is Either.Left -> Right(null)
-                    is Either.Right -> value
-                }
-            })
+        QueryParameter(this.name, this.converter, {
+            val value = this.valueExtractor(it)
+            when (value) {
+                is Either.Left -> Right(null)
+                is Either.Right -> value
+            }
+        })
 
 /**
  * Converts a [QueryParameter] to a repeated parameter. All occurrences of the query parameter will be extracted into a list.
@@ -218,6 +224,43 @@ fun <T> String.csvParam(converter: (String) -> T): QueryParameter<List<T>, List<
  */
 val String.csvParam
     get() = this.csvParam { it }
+
+/**
+ * Creates an enum extracting [QueryParameter].
+ *
+ * @param T the type of the enum
+ */
+inline fun <reified T : Enum<T>> String.enumParam(): QueryParameter<T, T> = this.stringParam.toEnum()
+
+/**
+ * Maps the value conversion of a [QueryParameter].
+ *
+ * @param T type of parameter value
+ * @param U type of the target parameter value
+ * @param mapper the mapping function
+ */
+fun <T, U> QueryParameter<T, T>.map(mapper: (T) -> U): QueryParameter<U, U> =
+    this.name.queryParam { value -> mapper(this.converter(value)) }
+
+/**
+ * Maps a string [QueryParameter] value to upper case.
+ */
+val QueryParameter<String, String>.toUpperCase
+    get() = this.map { it.toUpperCase() }
+
+/**
+ * Maps a string [QueryParameter] value to lower case.
+ */
+val QueryParameter<String, String>.toLowerCase
+    get() = this.map { it.toLowerCase() }
+
+/**
+ *  Maps a string [QueryParameter] value to an enum.
+ *
+ *  @param T the type of the enum
+ */
+inline fun <reified T : Enum<T>> QueryParameter<String, String>.toEnum(): QueryParameter<T, T> =
+    this.map { java.lang.Enum.valueOf(T::class.java, it) }
 
 /**
  * Extracts query parameters from the [org.springframework.web.reactive.function.server.ServerRequest].

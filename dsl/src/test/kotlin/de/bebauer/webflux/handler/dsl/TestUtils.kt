@@ -7,11 +7,21 @@ import reactor.core.publisher.Mono
 fun runHandlerTest(
     handler: (ServerRequest) -> Mono<ServerResponse>,
     validation: WebTestClient.ResponseSpec.() -> Unit,
-    route : RouterFunctionDsl.((ServerRequest) -> Mono<ServerResponse>) -> Unit = { GET("/test", it) },
+    route: RouterFunctionDsl.((ServerRequest) -> Mono<ServerResponse>) -> Unit = { GET("/test", it) },
     request: WebTestClient.() -> WebTestClient.RequestHeadersSpec<*> = { get().uri("/test") }
 ) {
     val router = router {
-        route(handler)
+        route(de.bebauer.webflux.handler.dsl.handler {
+            extractRequest { request ->
+                try {
+                    complete(handler(request).doOnError { t -> println(t) })
+                } catch (t: Throwable) {
+                    println(t)
+
+                    throw t
+                }
+            }
+        })
     }
 
     validation(

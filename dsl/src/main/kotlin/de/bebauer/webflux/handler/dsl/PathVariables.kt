@@ -111,6 +111,44 @@ val String.uLongVar
 val String.uShortVar
     get() = this.pathVariable(String::toUShort)
 
+
+/**
+ * Creates an enum extracting [PathVariable].
+ *
+ * @param T the type of the enum
+ */
+inline fun <reified T : Enum<T>> String.enumVar(): PathVariable<T> = this.stringVar.toEnum()
+
+/**
+ * Maps the value conversion of a [PathVariable].
+ *
+ * @param T type of parameter value
+ * @param U type of the target parameter value
+ * @param mapper the mapping function
+ */
+fun <T, U> PathVariable<T>.map(mapper: (T) -> U): PathVariable<U> =
+    this.name.pathVariable { value -> mapper(this.converter(value)) }
+
+/**
+ * Maps a string [PathVariable] value to upper case.
+ */
+val PathVariable<String>.toUpperCase
+    get() = this.map { it.toUpperCase() }
+
+/**
+ * Maps a string [PathVariable] value to lower case.
+ */
+val PathVariable<String>.toLowerCase
+    get() = this.map { it.toLowerCase() }
+
+/**
+ *  Maps a string [PathVariable] value to an enum.
+ *
+ *  @param T the type of the enum
+ */
+inline fun <reified T : Enum<T>> PathVariable<String>.toEnum(): PathVariable<T> =
+    this.map { java.lang.Enum.valueOf(T::class.java, it) }
+
 /**
  * Extracts path variables from the [org.springframework.web.reactive.function.server.ServerRequest].
  *

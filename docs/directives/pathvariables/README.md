@@ -28,11 +28,32 @@ This way the path variable will be converted into the correct type.
 * uShortVar
 * uIntVar
 * uLongVar
+* enumVar<T>\(\)
 
 ### Example
 
 ```kotlin
 "id".longVar // creates PathVariable<Long> instance for the "id" variable
+```
+
+### Mapping Values
+
+PathVariable values can be mapped with the `map` function.
+
+```kotlin
+"id".stringVar.map { it.toInt() }
+```
+
+There are also convenient functions for string variables.
+
+```kotlin
+"id".stringVar.toUpperCase
+
+"id".stringVar.toLowerCase
+
+"id".stringVar.toEnum<SomeEnum>()
+
+"id".stringVar.toUpperCase.toEnum<SomeEnum>()
 ```
 
 ## Extending the DSL
