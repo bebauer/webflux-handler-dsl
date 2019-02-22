@@ -80,6 +80,7 @@ publishing {
         register(publicationName, MavenPublication::class) {
             from(components["java"])
             artifact(sourcesJar.get())
+            artifactId = "webflux-handler-dsl"
         }
     }
 }
