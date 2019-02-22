@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     base
     kotlin("jvm") version "1.3.10" apply false
@@ -21,4 +19,8 @@ subprojects {
     val jUnitPlatformConsoleVersion by extra("1.2.0")
     val arrowVersion by extra("0.8.1")
     val kotlinTestVersion by extra("3.1.10")
+
+    tasks.withType<Jar> {
+        baseName = "webflux-handler-${project.name}"
+    }
 }
