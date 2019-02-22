@@ -46,11 +46,11 @@ repositories {
 ```text
 Groovy:
 
-implementation 'de.bebauer:webflux-handler-dsl:0.19.0'
+implementation 'de.bebauer:webflux-handler-dsl:0.20.0'
 
 Kotlin:
 
-implementation("de.bebauer:webflux-handler-dsl:0.19.0")
+implementation("de.bebauer:webflux-handler-dsl:0.20.0")
 ```
 
 ### Maven
