@@ -16,11 +16,11 @@ fun <T1, T2> HandlerDsl.pathVariables(
 
 ...
 
-fun <T1, ..., T10> HandlerDsl.pathVariables(
+fun <T1, ..., T??> HandlerDsl.pathVariables(
     variable1: PathVariable<T1>, 
     ..., 
-    variable10: PathVariable<T10>, 
-    init: HandlerDsl.(T1, ..., T10) -> CompleteOperation)
+    variable??: PathVariable<T??>, 
+    init: HandlerDsl.(T1, ..., T??) -> CompleteOperation)
     : CompleteOperation
 ```
 
