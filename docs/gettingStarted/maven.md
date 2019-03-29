@@ -19,6 +19,6 @@
 <dependency>
   <groupId>de.bebauer</groupId>
   <artifactId>webflux-handler-dsl</artifactId>
-  <version>0.21.0</version>
+  <version>1.0.0</version>
 </dependency>
 ```
