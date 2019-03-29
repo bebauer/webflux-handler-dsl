@@ -80,7 +80,7 @@ or
 
 ### Nullable Parameters
 
-Query parameters can also be defined as nullable, if using Kotlin nullable types if preferred to Arrow's Option. 
+Query parameters can also be defined as nullable, if using Kotlin nullable types is preferred to Arrow's Option. 
 To do this use the `nullable` extension property.
 
 ```kotlin

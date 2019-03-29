@@ -93,6 +93,102 @@ class PathVariablesTests : WordSpec() {
                 testTypedVariable({ this.stringVar.toEnum() }, TestEnum.Third)
             }
 
+            "extract nullable path variable" {
+                runHandlerTest(
+                    handler {
+                        pathVariable("test".stringVar.nullable) { test ->
+                            ok(test ?: "null")
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult().responseBody shouldBe "abc"
+                    },
+                    { GET("/test/{test}", it) },
+                    { get().uri("/test/abc") })
+            }
+
+            "extract missing nullable path variable" {
+                runHandlerTest(
+                    handler {
+                        pathVariable("test".stringVar.nullable) { test ->
+                            ok(test ?: "null")
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult().responseBody shouldBe "null"
+                    },
+                    { GET("/test", it) },
+                    { get().uri("/test") })
+            }
+
+            "extract optional path variable" {
+                runHandlerTest(
+                    handler {
+                        pathVariable("test".stringVar.optional) { test ->
+                            ok(test.toString())
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult().responseBody shouldBe "Some(abc)"
+                    },
+                    { GET("/test/{test}", it) },
+                    { get().uri("/test/abc") })
+            }
+
+            "extract missing optional path variable" {
+                runHandlerTest(
+                    handler {
+                        pathVariable("test".stringVar.optional) { test ->
+                            ok(test.toString())
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult().responseBody shouldBe "None"
+                    },
+                    { GET("/test", it) },
+                    { get().uri("/test") })
+            }
+
+            "extract optional path variable with default" {
+                runHandlerTest(
+                    handler {
+                        pathVariable("test".stringVar.optional("xyz")) { test ->
+                            ok(test)
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult().responseBody shouldBe "abc"
+                    },
+                    { GET("/test/{test}", it) },
+                    { get().uri("/test/abc") })
+            }
+
+            "extract missing optional path variable with default" {
+                runHandlerTest(
+                    handler {
+                        pathVariable("test".stringVar.optional("xyz")) { test ->
+                            ok(test)
+                        }
+                    },
+                    {
+                        expectStatus().isOk
+                            .expectBody(String::class.java)
+                            .returnResult().responseBody shouldBe "xyz"
+                    },
+                    { GET("/test", it) },
+                    { get().uri("/test") })
+            }
+
             "extract custom path variable" {
                 data class Test(val x: Int) {
                     override fun toString() = x.toString()
@@ -141,7 +237,7 @@ class PathVariablesTests : WordSpec() {
     }
 
     private inline fun <reified T> testTypedVariable(
-        crossinline variable: String.() -> PathVariable<T>,
+        crossinline variable: String.() -> PathVariable<T, T>,
         expectedResult: T,
         crossinline value: (T) -> String = { it.toString() }
     ) {

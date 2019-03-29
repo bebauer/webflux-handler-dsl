@@ -3,8 +3,8 @@
 ## Signature
 
 ```kotlin
-fun <T> HandlerDsl.pathVariable(
-    variable: PathVariable<T>, 
+fun <T, U> HandlerDsl.pathVariable(
+    variable: PathVariable<T, U>, 
     init: HandlerDsl.(T) -> CompleteOperation)
     : CompleteOperation
 ```

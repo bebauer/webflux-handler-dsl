@@ -14,16 +14,18 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
 
     val tests = mutableListOf<String>()
 
-    (2..10).forEach { i ->
+    (2..20).forEach { i ->
         val functionBuilder = FunSpec.builder("pathVariables")
             .receiver(handlerDsl)
 
         (1..i).forEach {
             val typeT = TypeVariableName("T$it")
+            val typeU = TypeVariableName("U$it")
 
             functionBuilder.addTypeVariable(typeT)
+            functionBuilder.addTypeVariable(typeU)
 
-            functionBuilder.addParameter("variable$it", pathVariable.parameterizedBy(typeT))
+            functionBuilder.addParameter("variable$it", pathVariable.parameterizedBy(typeT, typeU))
         }
 
         functionBuilder

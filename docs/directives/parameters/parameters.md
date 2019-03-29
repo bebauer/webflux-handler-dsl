@@ -18,11 +18,11 @@ fun <T1, U1, T2, U2> HandlerDsl.parameters(
 
 ...
 
-fun <T1, U1, ..., T10, U10> HandlerDsl.parameters(
+fun <T1, U1, ..., T??, U??> HandlerDsl.parameters(
     parameter1: QueryParameter<T1, U1>,
     ...,
-    parameter10: QueryParameter<T10, U10>, 
-    init: HandlerDsl.(T1, ..., T10) -> CompleteOperation)
+    parameter??: QueryParameter<T??, U??>, 
+    init: HandlerDsl.(T1, ..., T??) -> CompleteOperation)
     : CompleteOperation
 ```
 

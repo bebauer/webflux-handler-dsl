@@ -3,24 +3,24 @@
 ## Signature
 
 ```kotlin
-fun <T1> HandlerDsl.pathVariables(
-    variable1: PathVariable<T1>, 
+fun <T1, U1> HandlerDsl.pathVariables(
+    variable1: PathVariable<T1, U1>, 
     init: HandlerDsl.(T1) -> CompleteOperation)
     : CompleteOperation
 
-fun <T1, T2> HandlerDsl.pathVariables(
-    variable1: PathVariable<T1>, 
-    variable2: PathVariable<T2>, 
+fun <T1, U1, T2, U2> HandlerDsl.pathVariables(
+    variable1: PathVariable<T1, U1>, 
+    variable2: PathVariable<T2, U2>, 
     init: HandlerDsl.(T1, T2) -> CompleteOperation)
     : CompleteOperation
 
 ...
 
-fun <T1, ..., T10> HandlerDsl.pathVariables(
-    variable1: PathVariable<T1>, 
+fun <T1, U1, ..., T??, U??> HandlerDsl.pathVariables(
+    variable1: PathVariable<T1, U1>, 
     ..., 
-    variable10: PathVariable<T10>, 
-    init: HandlerDsl.(T1, ..., T10) -> CompleteOperation)
+    variable??: PathVariable<T??, U??>, 
+    init: HandlerDsl.(T1, ..., T??) -> CompleteOperation)
     : CompleteOperation
 ```
 
