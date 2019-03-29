@@ -74,7 +74,7 @@ implementation("de.bebauer:webflux-handler-dsl:1.0.0")
 <dependency>
   <groupId>de.bebauer</groupId>
   <artifactId>webflux-handler-dsl</artifactId>
-  <version>0.18.1</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
