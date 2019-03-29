@@ -1,8 +1,6 @@
 package de.bebauer.webflux.handler.dsl
 
-import arrow.core.Failure
-import arrow.core.Success
-import arrow.core.Try
+import arrow.core.*
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 
@@ -10,10 +8,16 @@ import org.springframework.web.server.ResponseStatusException
  * Represents a path variable.
  *
  * @param T type of the path variable
+ * @param U type of the parameter
  * @param name the name of the variable
  * @param converter converter function that maps a [String] to the type of the path variable
+ * @param valueExtractor the value extraction function
  */
-data class PathVariable<T>(val name: String, val converter: (String) -> T)
+data class PathVariable<T, U>(
+    val name: String,
+    val converter: (String) -> U,
+    val valueExtractor: (Option<String>) -> Either<Throwable, T>
+)
 
 /**
  * Creates a [PathVariable] from a [String].
@@ -21,7 +25,73 @@ data class PathVariable<T>(val name: String, val converter: (String) -> T)
  * @param T type of the path variable
  * @param converter converter function that maps a [String] to the type of the path variable
  */
-fun <T> String.pathVariable(converter: (String) -> T) = PathVariable(this, converter)
+fun <T> String.pathVariable(converter: (String) -> T): PathVariable<T, T> = PathVariable(this, converter, {
+    when (it) {
+        is Some -> Try { converter(it.t) }.toEither().mapLeft { t ->
+            ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid value for query parameter $this. Conversion failed.",
+                t
+            )
+        }
+        is None -> Left(
+            ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Missing required query parameter $this."
+            )
+        )
+    }
+})
+
+/**
+ * Makes a [PathVariable] optional.
+ *
+ * @param T the type of the path variable
+ * @param U type of the actual variable
+ */
+val <T, U> PathVariable<T, U>.optional
+    get(): PathVariable<Option<T>, U> = PathVariable(name = this.name, converter = this.converter, valueExtractor = {
+        val value = this.valueExtractor(it)
+        when (value) {
+            is Either.Left -> Right(None)
+            is Either.Right -> value.map(::Some)
+        }
+    })
+
+/**
+ * Makes a [PathVariable] optional.
+ *
+ * @param T the type of the path variable
+ * @param U type of the actual variable
+ * @param defaultValue the optional default value of the path variable
+ */
+fun <T, U> PathVariable<T, U>.optional(defaultValue: T): PathVariable<T, U> =
+    PathVariable(
+        this.name,
+        this.converter,
+        {
+            val value = this.valueExtractor(it)
+            when (value) {
+                is Either.Left -> Right(defaultValue)
+                is Either.Right -> value
+            }
+        })
+
+/**
+ * Makes a [PathVariable] nullable.
+ *
+ * @param T the type of the path variable
+ * @param U type of the actual variable
+ */
+val <T, U> PathVariable<T, U>.nullable
+    get(): PathVariable<T?, U> =
+        PathVariable(this.name, this.converter, {
+            val value = this.valueExtractor(it)
+            when (value) {
+                is Either.Left -> Right(null)
+                is Either.Right -> value
+            }
+        })
 
 /**
  * Creates a [String] path variable from a [String].
@@ -117,7 +187,7 @@ val String.uShortVar
  *
  * @param T the type of the enum
  */
-inline fun <reified T : Enum<T>> String.enumVar(): PathVariable<T> = this.stringVar.toEnum()
+inline fun <reified T : Enum<T>> String.enumVar(): PathVariable<T, T> = this.stringVar.toEnum()
 
 /**
  * Maps the value conversion of a [PathVariable].
@@ -126,19 +196,19 @@ inline fun <reified T : Enum<T>> String.enumVar(): PathVariable<T> = this.string
  * @param U type of the target parameter value
  * @param mapper the mapping function
  */
-fun <T, U> PathVariable<T>.map(mapper: (T) -> U): PathVariable<U> =
+fun <T, U> PathVariable<T, T>.map(mapper: (T) -> U): PathVariable<U, U> =
     this.name.pathVariable { value -> mapper(this.converter(value)) }
 
 /**
  * Maps a string [PathVariable] value to upper case.
  */
-val PathVariable<String>.toUpperCase
+val PathVariable<String, String>.toUpperCase
     get() = this.map { it.toUpperCase() }
 
 /**
  * Maps a string [PathVariable] value to lower case.
  */
-val PathVariable<String>.toLowerCase
+val PathVariable<String, String>.toLowerCase
     get() = this.map { it.toLowerCase() }
 
 /**
@@ -146,7 +216,7 @@ val PathVariable<String>.toLowerCase
  *
  *  @param T the type of the enum
  */
-inline fun <reified T : Enum<T>> PathVariable<String>.toEnum(): PathVariable<T> =
+inline fun <reified T : Enum<T>> PathVariable<String, String>.toEnum(): PathVariable<T, T> =
     this.map { java.lang.Enum.valueOf(T::class.java, it) }
 
 /**
@@ -163,21 +233,17 @@ inline fun <reified T : Enum<T>> PathVariable<String>.toEnum(): PathVariable<T> 
  *
  * @see HandlerDsl
  */
-fun <T> HandlerDsl.pathVariable(
-    variable: PathVariable<T>,
+fun <T, U> HandlerDsl.pathVariable(
+    variable: PathVariable<T, U>,
     init: HandlerDsl.(T) -> CompleteOperation
 ) = extractRequest { request ->
-    val (name, converter) = variable
+    val variables = request.pathVariables()
 
-    val value = request.pathVariable(name)
+    val value = variable.valueExtractor(variables[variable.name].toOption())
 
-    val converted = Try { converter(value) }
-
-    when (converted) {
-        is Failure -> failWith(
-            ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse path variable $name.", converted.exception)
-        )
-        is Success -> init(converted.value)
+    when (value) {
+        is Either.Left -> failWith(value.a)
+        is Either.Right -> init(value.b)
     }
 }
 
@@ -186,7 +252,7 @@ fun <T> HandlerDsl.pathVariable(
  *
  * @see pathVariable
  */
-fun <T1> HandlerDsl.pathVariables(
-    variable1: PathVariable<T1>,
+fun <T1, U1> HandlerDsl.pathVariables(
+    variable1: PathVariable<T1, U1>,
     init: HandlerDsl.(T1) -> CompleteOperation
 ) = pathVariable(variable1, init)

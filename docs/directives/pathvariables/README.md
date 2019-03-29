@@ -56,6 +56,32 @@ There are also convenient functions for string variables.
 "id".stringVar.toUpperCase.toEnum<SomeEnum>()
 ```
 
+### Optional Variables
+
+Path variables can also be defined as optional. For example if the same logic should apply to different routes. 
+To do this use the `optional` extension method / property.
+
+```kotlin
+"query".stringVar.optional
+```
+
+This will extract an `Option<T>`.
+
+A default value can also be specified. In this case `T` will be extracted an not `Option<T>`.
+
+```kotlin
+"query".stringVar.optional("default")
+```
+
+### Nullable Variables
+
+Path variables can also be defined as nullable, if using Kotlin nullable types is preferred to Arrow's Option. 
+To do this use the `nullable` extension property.
+
+```kotlin
+"query".stringVar.nullable
+```
+
 ## Extending the DSL
 
 The DSL can be easily extended to provide custom converters for path variables by utilizing the `pathVariable` String extension function.

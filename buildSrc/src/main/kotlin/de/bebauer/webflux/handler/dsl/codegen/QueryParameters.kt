@@ -15,7 +15,7 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
 
     val tests = mutableListOf<String>()
 
-    (2..42).forEach { i ->
+    (2..20).forEach { i ->
         val functionBuilder = FunSpec.builder("parameters")
             .receiver(handlerDsl)
 
