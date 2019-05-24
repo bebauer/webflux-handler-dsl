@@ -3,6 +3,7 @@
 **Enhancements:**
 
 * Code refactorings
+* Gradle updated to 5.4.1
 * Kotlin updated to 1.3.31
 * Spring updated to 5.1.7
 * Spring Boot updated to 2.1.5
