@@ -23,9 +23,9 @@ abstract class ChainableCompleteOperation : BaseCompleteOperation() {
 
     internal fun combine(maybeFallback: Option<() -> Mono<ServerResponse>>): Mono<ServerResponse> =
         parent.map { parent ->
-            parent.combine(Some({
+            parent.combine(Some {
                 buildResponseWithFallback(maybeFallback)
-            }))
+            })
         }.getOrElse {
             buildResponseWithFallback(maybeFallback)
         }

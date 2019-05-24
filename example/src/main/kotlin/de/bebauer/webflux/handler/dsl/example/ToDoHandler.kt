@@ -43,10 +43,7 @@ class ToDoHandler(val repository: ToDoRepository) {
 
     val get = handler {
         pathVariable("id".stringVar) { id ->
-            repository.findById(id)
-                .map<CompleteOperation> { ok(it) }
-                .defaultIfEmpty(notFound())
-                .toCompleteOperation()
+            ok(repository.findById(id)) or notFound()
         }
     }
 

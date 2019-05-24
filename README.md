@@ -8,6 +8,8 @@
 This library provides a Kotlin DSL for building Spring Webflux handlers. It starts
 where the routing DSL from Spring ends.
 
+[Release Notes](docs/releaseNotes.md)
+
 ### Example
 
 ```kotlin

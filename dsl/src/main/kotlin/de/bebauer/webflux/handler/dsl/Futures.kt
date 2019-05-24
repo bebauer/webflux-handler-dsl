@@ -91,7 +91,7 @@ fun <T> HandlerDsl.onComplete(
 
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful, waiting indefinitely.
- * Fails if the handler with [HandlerDsl.failWith] if the future failed.
+ * Fails if the handler with [failWith] if the future failed.
  *
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
@@ -102,7 +102,7 @@ fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, init: HandlerDsl.(T) 
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
  * waiting the specified amount of time.
- * Fails if the handler with [HandlerDsl.failWith] if the future failed.
+ * Fails if the handler with [failWith] if the future failed.
  *
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
@@ -118,7 +118,7 @@ fun <T> HandlerDsl.onSuccess(
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
  * waiting the specified amount of time.
- * Fails if the handler with [HandlerDsl.failWith] if the future failed.
+ * Fails if the handler with [failWith] if the future failed.
  *
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
@@ -134,7 +134,7 @@ fun <T> HandlerDsl.onSuccess(
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
  * waiting the specified amount of time.
- * Fails if the handler with [HandlerDsl.failWith] if the future failed.
+ * Fails if the handler with [failWith] if the future failed.
  *
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
@@ -151,7 +151,7 @@ fun <T> HandlerDsl.onSuccess(
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
  * waiting the specified amount of time.
- * Fails if the handler with [HandlerDsl.failWith] if the future failed.
+ * Fails if the handler with [failWith] if the future failed.
  *
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future

@@ -56,8 +56,7 @@ fun <T> String.cookieName(converter: (List<String>) -> T) = CookieName(this, con
  */
 val <T, U> CookieName<T, U>.optional: CookieName<Option<T>, U>
     get() = CookieName(this.name, this.converter) {
-        val value = this.valueExtractor(it)
-        when (value) {
+        when (val value = this.valueExtractor(it)) {
             is Either.Left -> Right(None)
             is Either.Right -> value.map { v -> v.toOption() }
         }
@@ -71,8 +70,7 @@ val <T, U> CookieName<T, U>.optional: CookieName<Option<T>, U>
  * @param defaultValue the default value if the header is missing
  */
 fun <T, U> CookieName<T, U>.optional(defaultValue: T): CookieName<T, U> = CookieName(this.name, this.converter) {
-    val value = this.valueExtractor(it)
-    when (value) {
+    when (val value = this.valueExtractor(it)) {
         is Either.Left -> Right(defaultValue)
         is Either.Right -> value
     }
@@ -86,8 +84,7 @@ fun <T, U> CookieName<T, U>.optional(defaultValue: T): CookieName<T, U> = Cookie
  */
 val <T, U> CookieName<T, U>.nullable: CookieName<T?, U>
     get() = CookieName(this.name, this.converter) {
-        val value = this.valueExtractor(it)
-        when (value) {
+        when (val value = this.valueExtractor(it)) {
             is Either.Left -> Right(null)
             is Either.Right -> value
         }
@@ -120,9 +117,7 @@ val String.stringCookie: CookieName<List<String>, List<String>>
  * @param cookie the name of the cookie as a [CookieName]
  */
 fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> CompleteOperation) = extractRequest { request ->
-    val values = cookie.valueExtractor(request.cookies()[cookie.name].toOption().map { v -> v.map { it.value } })
-
-    when (values) {
+    when (val values = cookie.valueExtractor(request.cookies()[cookie.name].toOption().map { v -> v.map { it.value } })) {
         is Either.Left -> failWith(values.a)
         is Either.Right -> init(values.b)
     }
