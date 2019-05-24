@@ -51,8 +51,7 @@ fun <T> String.pathVariable(converter: (String) -> T): PathVariable<T, T> = Path
  */
 val <T, U> PathVariable<T, U>.optional
     get(): PathVariable<Option<T>, U> = PathVariable(name = this.name, converter = this.converter, valueExtractor = {
-        val value = this.valueExtractor(it)
-        when (value) {
+        when (val value = this.valueExtractor(it)) {
             is Either.Left -> Right(None)
             is Either.Right -> value.map(::Some)
         }
@@ -70,8 +69,7 @@ fun <T, U> PathVariable<T, U>.optional(defaultValue: T): PathVariable<T, U> =
         this.name,
         this.converter,
         {
-            val value = this.valueExtractor(it)
-            when (value) {
+            when (val value = this.valueExtractor(it)) {
                 is Either.Left -> Right(defaultValue)
                 is Either.Right -> value
             }
@@ -86,8 +84,7 @@ fun <T, U> PathVariable<T, U>.optional(defaultValue: T): PathVariable<T, U> =
 val <T, U> PathVariable<T, U>.nullable
     get(): PathVariable<T?, U> =
         PathVariable(this.name, this.converter, {
-            val value = this.valueExtractor(it)
-            when (value) {
+            when (val value = this.valueExtractor(it)) {
                 is Either.Left -> Right(null)
                 is Either.Right -> value
             }
@@ -239,9 +236,7 @@ fun <T, U> HandlerDsl.pathVariable(
 ) = extractRequest { request ->
     val variables = request.pathVariables()
 
-    val value = variable.valueExtractor(variables[variable.name].toOption())
-
-    when (value) {
+    when (val value = variable.valueExtractor(variables[variable.name].toOption())) {
         is Either.Left -> failWith(value.a)
         is Either.Right -> init(value.b)
     }

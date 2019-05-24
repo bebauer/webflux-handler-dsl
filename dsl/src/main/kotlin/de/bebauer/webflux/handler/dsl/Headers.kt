@@ -47,8 +47,7 @@ fun <T> String.header(converter: (List<String>) -> T) = HeaderName(this, convert
  */
 val <T, U> HeaderName<T, U>.optional: HeaderName<Option<T>, U>
     get() = HeaderName(this.name, this.converter) {
-        val value = this.valueExtractor(it)
-        when (value) {
+        when (val value = this.valueExtractor(it)) {
             is Either.Left -> Right(None)
             is Either.Right -> value.map { v -> v.toOption() }
         }
@@ -62,8 +61,7 @@ val <T, U> HeaderName<T, U>.optional: HeaderName<Option<T>, U>
  * @param defaultValue the default value if the header is missing
  */
 fun <T, U> HeaderName<T, U>.optional(defaultValue: T): HeaderName<T, U> = HeaderName(this.name, this.converter) {
-    val value = this.valueExtractor(it)
-    when (value) {
+    when (val value = this.valueExtractor(it)) {
         is Either.Left -> Right(defaultValue)
         is Either.Right -> value
     }
@@ -77,8 +75,7 @@ fun <T, U> HeaderName<T, U>.optional(defaultValue: T): HeaderName<T, U> = Header
  */
 val <T, U> HeaderName<T, U>.nullable: HeaderName<T?, U>
     get() = HeaderName(this.name, this.converter) {
-        val value = this.valueExtractor(it)
-        when (value) {
+        when (val value = this.valueExtractor(it)) {
             is Either.Left -> Right(null)
             is Either.Right -> value
         }
@@ -121,9 +118,7 @@ fun <T, U> HandlerDsl.headerValue(
     header: HeaderName<T, U>,
     init: HandlerDsl.(T) -> CompleteOperation
 ) = extractRequest { request ->
-    val values = header.valueExtractor(request.headers().header(header.name))
-
-    when (values) {
+    when (val values = header.valueExtractor(request.headers().header(header.name))) {
         is Either.Left -> failWith(values.a)
         is Either.Right -> init(values.b)
     }

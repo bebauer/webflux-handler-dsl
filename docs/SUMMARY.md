@@ -35,3 +35,4 @@
     * [extractRequestScheme](directives/request/extractScheme.md)
     * [extractRequestUri](directives/request/extractRequestUri.md)
   * [execute](directives/execute.md)
+* [Release Notes](releaseNotes.md)

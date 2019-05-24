@@ -60,8 +60,7 @@ val <T, U> QueryParameter<T, U>.optional
             this.name,
             this.converter,
             {
-                val value = this.valueExtractor(it)
-                when (value) {
+                when (val value = this.valueExtractor(it)) {
                     is Either.Left -> Right(None)
                     is Either.Right -> value.map(::Some)
                 }
@@ -79,8 +78,7 @@ fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> 
         this.name,
         this.converter,
         {
-            val value = this.valueExtractor(it)
-            when (value) {
+            when (val value = this.valueExtractor(it)) {
                 is Either.Left -> Right(defaultValue)
                 is Either.Right -> value
             }
@@ -95,8 +93,7 @@ fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> 
 val <T, U> QueryParameter<T, U>.nullable
     get(): QueryParameter<T?, U> =
         QueryParameter(this.name, this.converter, {
-            val value = this.valueExtractor(it)
-            when (value) {
+            when (val value = this.valueExtractor(it)) {
                 is Either.Left -> Right(null)
                 is Either.Right -> value
             }
@@ -280,9 +277,7 @@ fun <T, U> HandlerDsl.parameter(
     parameter: QueryParameter<T, U>,
     init: HandlerDsl.(T) -> CompleteOperation
 ) = extractRequest { request ->
-    val values = parameter.valueExtractor(request.queryParams()[parameter.name].toOption())
-
-    when (values) {
+    when (val values = parameter.valueExtractor(request.queryParams()[parameter.name].toOption())) {
         is Either.Left -> failWith(values.a)
         is Either.Right -> init(values.b)
     }
