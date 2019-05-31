@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.1.0
+
+**Enhancements:**
+
+* Update Arrow to 0.9 
+
 ## 1.0.1
 
 **Enhancements:**
