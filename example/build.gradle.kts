@@ -27,7 +27,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("io.arrow-kt:arrow-core:${extra["arrowVersion"]}")
+    implementation("io.arrow-kt:arrow-core-data:${extra["arrowVersion"]}")
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
     runtime("de.flapdoodle.embed:de.flapdoodle.embed.mongo")

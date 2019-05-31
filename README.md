@@ -1,5 +1,3 @@
-# Read Me
-
 ## Webflux Handler DSL
 
 [![Build Status](https://travis-ci.org/bebauer/webflux-handler-dsl.svg?branch=master)](https://travis-ci.org/bebauer/webflux-handler-dsl)
