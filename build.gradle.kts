@@ -17,7 +17,7 @@ subprojects {
     val springBootVersion by extra("2.1.5.RELEASE")
     val jacksonVersion by extra("2.9.9")
     val jUnitPlatformConsoleVersion by extra("1.4.2")
-    val arrowVersion by extra("0.8.2")
+    val arrowVersion by extra("0.9.0")
     val kotlinTestVersion by extra("3.3.2")
 
     tasks.withType<Jar> {
