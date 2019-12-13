@@ -1,6 +1,8 @@
 package de.bebauer.webflux.handler.dsl
 
 import arrow.core.*
+import arrow.fx.IO
+import arrow.fx.handleError
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 
@@ -27,13 +29,17 @@ data class PathVariable<T, U>(
  */
 fun <T> String.pathVariable(converter: (String) -> T): PathVariable<T, T> = PathVariable(this, converter, {
     when (it) {
-        is Some -> Try { converter(it.t) }.toEither().mapLeft { t ->
-            ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Invalid value for query parameter $this. Conversion failed.",
-                t
-            )
-        }
+        is Some -> IO { converter(it.t) }
+            .map(::Right)
+            .handleError { t ->
+                Left(
+                    ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Invalid value for query parameter $this. Conversion failed.",
+                        t
+                    )
+                )
+            }.unsafeRunSync()
         is None -> Left(
             ResponseStatusException(
                 HttpStatus.BAD_REQUEST,

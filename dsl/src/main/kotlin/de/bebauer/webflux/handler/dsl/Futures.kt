@@ -21,7 +21,10 @@ data class Timeout(val value: Long, val unit: TimeUnit) {
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
  */
-fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, init: HandlerDsl.(Try<T>) -> CompleteOperation) =
+fun <T> HandlerDsl.onComplete(
+    future: CompletableFuture<T>,
+    init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
+) =
     onComplete(future, Option.empty<Timeout>(), init)
 
 /**
@@ -34,7 +37,7 @@ fun <T> HandlerDsl.onComplete(future: CompletableFuture<T>, init: HandlerDsl.(Tr
 fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Duration,
-    init: HandlerDsl.(Try<T>) -> CompleteOperation
+    init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
 ) =
     onComplete(future, timeout.toOption(), init)
 
@@ -48,7 +51,7 @@ fun <T> HandlerDsl.onComplete(
 fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Timeout,
-    init: HandlerDsl.(Try<T>) -> CompleteOperation
+    init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
 ) =
     onComplete(future, timeout.toOption(), init)
 
@@ -63,7 +66,7 @@ fun <T> HandlerDsl.onComplete(
 fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Option<Duration>,
-    init: HandlerDsl.(Try<T>) -> CompleteOperation
+    init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
 ) =
     onComplete(future, timeout.map { Timeout.of(it) }, init)
 
@@ -78,15 +81,15 @@ fun <T> HandlerDsl.onComplete(
 fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Option<Timeout>,
-    init: HandlerDsl.(Try<T>) -> CompleteOperation
+    init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
 ) =
     complete(Mono.fromFuture(timeout.map {
         future.orTimeout(
             it.value,
             it.unit
         )
-    }.getOrElse { future }.thenApply<Try<T>> { Success(it) })
-        .onErrorResume { Mono.just(Failure(it.cause ?: it)) }
+    }.getOrElse { future }.thenApply<Either<Throwable, T>> { Right(it) })
+        .onErrorResume { Mono.just(Left(it.cause ?: it)) }
         .flatMap { value -> execute { init(value) } })
 
 /**
@@ -165,7 +168,7 @@ fun <T> HandlerDsl.onSuccess(
 ) =
     onComplete(future, timeout) { result ->
         when (result) {
-            is Try.Success -> init(result.value)
-            is Try.Failure -> failWith(result.exception)
+            is Either.Right -> init(result.b)
+            is Either.Left -> failWith(result.a)
         }
     }

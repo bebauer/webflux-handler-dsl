@@ -37,6 +37,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.springframework:spring-webflux:${extra["springVersion"]}")
     implementation("io.arrow-kt:arrow-core-data:${extra["arrowVersion"]}")
+    implementation("io.arrow-kt:arrow-fx:${extra["arrowVersion"]}")
     testImplementation("org.springframework:spring-test:${extra["springVersion"]}")
     testImplementation("org.springframework:spring-context:${extra["springVersion"]}")
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:${extra["jacksonVersion"]}") {
