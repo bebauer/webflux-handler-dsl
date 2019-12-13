@@ -1,7 +1,10 @@
 package de.bebauer.webflux.handler.dsl
 
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.RouterFunctionDsl
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Mono
 
 fun runHandlerTest(

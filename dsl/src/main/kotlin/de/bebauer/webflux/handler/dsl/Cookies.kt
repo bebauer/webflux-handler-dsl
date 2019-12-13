@@ -116,9 +116,11 @@ val String.stringCookie: CookieName<List<String>, List<String>>
  *
  * @param cookie the name of the cookie as a [CookieName]
  */
-fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> CompleteOperation) = extractRequest { request ->
-    when (val values = cookie.valueExtractor(request.cookies()[cookie.name].toOption().map { v -> v.map { it.value } })) {
-        is Either.Left -> failWith(values.a)
-        is Either.Right -> init(values.b)
+fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> CompleteOperation) =
+    extractRequest { request ->
+        when (val values =
+            cookie.valueExtractor(request.cookies()[cookie.name].toOption().map { v -> v.map { it.value } })) {
+            is Either.Left -> failWith(values.a)
+            is Either.Right -> init(values.b)
+        }
     }
-}

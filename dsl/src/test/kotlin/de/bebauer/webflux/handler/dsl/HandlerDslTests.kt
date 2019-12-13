@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 class HandlerDslTests : WordSpec({
 
     "handler DSL" should {
-       "allow completions inside if - else" {
+        "allow completions inside if - else" {
             forall(row("a"), row("b")) { value ->
                 runHandlerTest(
                     handler {

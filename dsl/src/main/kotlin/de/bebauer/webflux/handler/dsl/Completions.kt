@@ -101,14 +101,14 @@ fun complete(
  *
  * @param operation the [CompleteOperation] Mono
  */
-fun <T: CompleteOperation> complete(operation: Mono<T>): NestedCompleteOperation<T> {
+fun <T : CompleteOperation> complete(operation: Mono<T>): NestedCompleteOperation<T> {
     return NestedCompleteOperation(operation)
 }
 
 /**
  * Builds a complete operation from a complete operation [Mono].
  */
-fun <T: CompleteOperation> Mono<T>.toCompleteOperation(): NestedCompleteOperation<T> = complete(this)
+fun <T : CompleteOperation> Mono<T>.toCompleteOperation(): NestedCompleteOperation<T> = complete(this)
 
 /**
  * Complete the handler with the specified response.
