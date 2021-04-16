@@ -4,7 +4,9 @@
 
 ```groovy
 repositories {
-    jcenter()
+    maven {
+        url "https://bebauer.jfrog.io/artifactory/maven-releases"
+    }
 }
 
 dependencies {
@@ -16,7 +18,9 @@ dependencies {
 
 ```kotlin
 repositories {
-    jcenter()
+    maven {
+        url = uri("https://bebauer.jfrog.io/artifactory/maven-releases")
+    }
 }
 
 dependencies {
