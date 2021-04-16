@@ -10,7 +10,7 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
 
     val queryParam = ClassName("de.bebauer.webflux.handler.dsl", "QueryParameter")
     val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
-    val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+    val wordSpec = ClassName("io.kotest.core.spec.style", "WordSpec")
     val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
 
     val tests = mutableListOf<String>()
@@ -34,8 +34,8 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
                 "init",
                 LambdaTypeName.get(
                     receiver = handlerDsl,
-                    parameters = *(1..i).map { TypeVariableName("T$it") }.toTypedArray(),
-                    returnType = completeOperation
+                    returnType = completeOperation,
+                    parameters = (1..i).map { TypeVariableName("T$it") }.toTypedArray(),
                 )
             )
             .returns(completeOperation)
@@ -55,20 +55,23 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
 
         fileBuilder.addFunction(functionBuilder.build())
 
-        tests.add("""
+        tests.add(
+            """
             |"extract $i values" {
             |   runHandlerTest(
             |       handler {
-            |          parameters(${(1..i).map { "\"p$it\".intParam" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
-            |              ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
+            |          parameters(${(1..i).joinToString { "\"p$it\".intParam" }}) { ${
+                (1..i).joinToString { "p$it" }
+            } ->
+            |              ok(Flux.fromIterable(listOf(${(1..i).joinToString { "p$it" }})))
             |          }
             |       },
             |       {
             |           expectStatus().isOk
             |               .expectBodyList(Int::class.java)
-            |               .returnResult().responseBody should containExactly(${(1..i).map { "$it" }.joinToString()})
+            |               .returnResult().responseBody should containExactly(${(1..i).joinToString { "$it" }})
             |       },
-            |       request = { get().uri("/test?${(1..i).map { "p$it=$it" }.joinToString("&")}") })
+            |       request = { get().uri("/test?${(1..i).joinToString("&") { "p$it=$it" }}") })
             |
             |}
             """.trimMargin()
@@ -78,8 +81,8 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
     fileBuilder.build().writeTo(outputDir)
 
     FileSpec.builder("de.bebauer.webflux.handler.dsl", "QueryParametersGeneratedTests")
-        .addImport("io.kotlintest", "should")
-        .addImport("io.kotlintest.matchers.collections", "containExactly")
+        .addImport("io.kotest.matchers", "should")
+        .addImport("io.kotest.matchers.collections", "containExactly")
         .addImport("reactor.core.publisher", "Flux")
         .addType(
             TypeSpec.classBuilder("QueryParametersGeneratedTests").superclass(wordSpec).addInitializerBlock(

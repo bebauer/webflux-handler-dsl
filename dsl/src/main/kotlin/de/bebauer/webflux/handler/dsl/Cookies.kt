@@ -25,24 +25,24 @@ data class CookieName<T, U>(
  * @param T the type of the cookie value
  * @param converter the value converter function
  */
-fun <T> String.cookieName(converter: (List<String>) -> T) = CookieName(this, converter) {
+fun <T> String.cookieName(converter: (List<String>) -> T): CookieName<T, T> = CookieName(this, converter) {
     when (it) {
-        is None -> Left(
+        is None -> Either.Left(
             ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Missing required cookie $this."
             )
         )
         is Some -> {
-            if (it.t.isEmpty()) {
-                Left(
+            if (it.value.isEmpty()) {
+                Either.Left(
                     ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Missing required cookie $this."
                     )
                 )
             } else {
-                Right(converter(it.t))
+                Either.Right(converter(it.value))
             }
         }
     }
@@ -57,7 +57,7 @@ fun <T> String.cookieName(converter: (List<String>) -> T) = CookieName(this, con
 val <T, U> CookieName<T, U>.optional: CookieName<Option<T>, U>
     get() = CookieName(this.name, this.converter) {
         when (val value = this.valueExtractor(it)) {
-            is Either.Left -> Right(None)
+            is Either.Left -> Either.Right(None)
             is Either.Right -> value.map { v -> v.toOption() }
         }
     }
@@ -71,7 +71,7 @@ val <T, U> CookieName<T, U>.optional: CookieName<Option<T>, U>
  */
 fun <T, U> CookieName<T, U>.optional(defaultValue: T): CookieName<T, U> = CookieName(this.name, this.converter) {
     when (val value = this.valueExtractor(it)) {
-        is Either.Left -> Right(defaultValue)
+        is Either.Left -> Either.Right(defaultValue)
         is Either.Right -> value
     }
 }
@@ -85,7 +85,7 @@ fun <T, U> CookieName<T, U>.optional(defaultValue: T): CookieName<T, U> = Cookie
 val <T, U> CookieName<T, U>.nullable: CookieName<T?, U>
     get() = CookieName(this.name, this.converter) {
         when (val value = this.valueExtractor(it)) {
-            is Either.Left -> Right(null)
+            is Either.Left -> Either.Right(null)
             is Either.Right -> value
         }
     }
@@ -116,11 +116,11 @@ val String.stringCookie: CookieName<List<String>, List<String>>
  *
  * @param cookie the name of the cookie as a [CookieName]
  */
-fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> CompleteOperation) =
+fun <T, U> HandlerDsl.cookie(cookie: CookieName<T, U>, init: HandlerDsl.(T) -> CompleteOperation): CompleteOperation =
     extractRequest { request ->
         when (val values =
             cookie.valueExtractor(request.cookies()[cookie.name].toOption().map { v -> v.map { it.value } })) {
-            is Either.Left -> failWith(values.a)
-            is Either.Right -> init(values.b)
+            is Either.Left -> failWith(values.value)
+            is Either.Right -> init(values.value)
         }
     }

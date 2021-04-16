@@ -19,7 +19,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     val httpStatus = ClassName("org.springframework.http", "HttpStatus")
     val bodyInserter = ClassName("org.springframework.web.reactive.function", "BodyInserter")
     val serverHttpResponse = ClassName("org.springframework.http.server.reactive", "ServerHttpResponse")
-    val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+    val wordSpec = ClassName("io.kotest.core.spec.style", "WordSpec")
     val responseBuilderCompleteOperation =
         ClassName("de.bebauer.webflux.handler.dsl", "ResponseBuilderCompleteOperation")
     val monoBodyCompleteOperation = ClassName("de.bebauer.webflux.handler.dsl", "MonoBodyCompleteOperation")
@@ -66,7 +66,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                     runHandlerTest(
                         handler {
                             ${status.underscoreToCamelCase()} {
-                                body(fromObject("test"))
+                                body(fromValue("test"))
                             }
                         },
                         {
@@ -123,7 +123,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     }
 
     fun generateWithMono(status: String) {
-        val typeT = TypeVariableName("T")
+        val typeT = TypeVariableName("T", listOf(ANY))
 
         srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
@@ -166,7 +166,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     }
 
     fun generateWithValue(status: String) {
-        val typeT = TypeVariableName("T")
+        val typeT = TypeVariableName("T", listOf(ANY))
 
         srcFileBuilder.addFunction(
             FunSpec.builder(status.underscoreToCamelCase())
@@ -232,7 +232,7 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
                 "complete with body inserter" {
                     runHandlerTest(
                         handler {
-                            ${status.underscoreToCamelCase()}(fromObject("123")) {
+                            ${status.underscoreToCamelCase()}(fromValue("123")) {
                                 header("test", "xyz")
                             }
                         },
@@ -258,9 +258,9 @@ internal fun generateStatusCompletions(outputDir: File, testOutDir: File) {
     srcFileBuilder.build().writeTo(outputDir)
 
     FileSpec.builder("de.bebauer.webflux.handler.dsl", "StatusCompletionsGeneratedTests")
-        .addImport("io.kotlintest", "should", "shouldBe")
-        .addImport("io.kotlintest.matchers.collections", "containExactly")
-        .addImport("org.springframework.web.reactive.function", "BodyInserters.fromObject")
+        .addImport("io.kotest.matchers", "should", "shouldBe")
+        .addImport("io.kotest.matchers.collections", "containExactly")
+        .addImport("org.springframework.web.reactive.function", "BodyInserters.fromValue")
         .addImport("reactor.core.publisher", "Flux")
         .addImport("reactor.core.publisher", "Mono")
         .addType(
@@ -288,7 +288,9 @@ private fun String.underscoreToCamelCase() = "_([a-z\\d])".toRegex().replace(thi
 
 private fun String.firstToUpper() = this[0].toUpperCase() + this.substring(1)
 
-private fun String.statusToCheck() = "is${when (this) {
-    "INTERNAL_SERVER_ERROR" -> "5xx_SERVER_ERROR"
-    else -> this
-}.underscoreToCamelCase().firstToUpper()}"
+private fun String.statusToCheck() = "is${
+    when (this) {
+        "INTERNAL_SERVER_ERROR" -> "5xx_SERVER_ERROR"
+        else -> this
+    }.underscoreToCamelCase().firstToUpper()
+}"

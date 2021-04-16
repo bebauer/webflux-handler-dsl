@@ -1,9 +1,9 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.matchers.collections.containExactly
-import io.kotlintest.should
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.collections.containExactly
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import java.math.BigDecimal
@@ -14,6 +14,7 @@ class PathVariablesTests : WordSpec() {
 
     enum class TestEnum {
         FIRST,
+
         @Suppress("EnumEntryName")
         second,
         Third
@@ -135,7 +136,7 @@ class PathVariablesTests : WordSpec() {
                     {
                         expectStatus().isOk
                             .expectBody(String::class.java)
-                            .returnResult().responseBody shouldBe "Some(abc)"
+                            .returnResult().responseBody shouldBe "Option.Some(abc)"
                     },
                     { GET("/test/{test}", it) },
                     { get().uri("/test/abc") })
@@ -151,7 +152,7 @@ class PathVariablesTests : WordSpec() {
                     {
                         expectStatus().isOk
                             .expectBody(String::class.java)
-                            .returnResult().responseBody shouldBe "None"
+                            .returnResult().responseBody shouldBe "Option.None"
                     },
                     { GET("/test", it) },
                     { get().uri("/test") })
@@ -207,7 +208,7 @@ class PathVariablesTests : WordSpec() {
                         ) { test1, test2, test3 ->
                             ok {
                                 contentType(MediaType.APPLICATION_JSON)
-                                body(BodyInserters.fromObject(listOf(test1, test2, test3)))
+                                body(BodyInserters.fromValue(listOf(test1, test2, test3)))
                             }
                         }
                     },

@@ -9,7 +9,7 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
 
     val pathVariable = ClassName("de.bebauer.webflux.handler.dsl", "PathVariable")
     val handlerDsl = ClassName("de.bebauer.webflux.handler.dsl", "HandlerDsl")
-    val wordSpec = ClassName("io.kotlintest.specs", "WordSpec")
+    val wordSpec = ClassName("io.kotest.core.spec.style", "WordSpec")
     val completeOperation = ClassName("de.bebauer.webflux.handler.dsl", "CompleteOperation")
 
     val tests = mutableListOf<String>()
@@ -33,8 +33,8 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
                 "init",
                 LambdaTypeName.get(
                     receiver = handlerDsl,
-                    parameters = *(1..i).map { TypeVariableName("T$it") }.toTypedArray(),
-                    returnType = completeOperation
+                    returnType = completeOperation,
+                    parameters = (1..i).map { TypeVariableName("T$it") }.toTypedArray(),
                 )
             )
             .returns(completeOperation)
@@ -54,20 +54,23 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
 
         fileBuilder.addFunction(functionBuilder.build())
 
-        tests.add("""
+        tests.add(
+            """
             |"extract $i values" {
             |   runHandlerTest(
             |       handler {
-            |          pathVariables(${(1..i).map { "\"p$it\".intVar" }.joinToString()}) { ${(1..i).map { "p$it" }.joinToString()} ->
-            |              ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
+            |          pathVariables(${(1..i).joinToString { "\"p$it\".intVar" }}) { ${
+                (1..i).joinToString { "p$it" }
+            } ->
+            |              ok(Flux.fromIterable(listOf(${(1..i).joinToString { "p$it" }})))
             |          }
             |       },
             |       {
             |           expectStatus().isOk
             |               .expectBodyList(Int::class.java)
-            |               .returnResult().responseBody should containExactly(${(1..i).map { "$it" }.joinToString()})
+            |               .returnResult().responseBody should containExactly(${(1..i).joinToString { "$it" }})
             |       },
-            |       route = { GET("/test/${(1..i).map { "{p$it}" }.joinToString("/")}", it) },
+            |       route = { GET("/test/${(1..i).joinToString("/") { "{p$it}" }}", it) },
             |       request = { get().uri("/test/${(1..i).joinToString("/")}") })
             |}
             """.trimMargin()
@@ -77,8 +80,8 @@ internal fun generatePathVariableDsl(outputDir: File, testOutDir: File) {
     fileBuilder.build().writeTo(outputDir)
 
     FileSpec.builder("de.bebauer.webflux.handler.dsl", "PathVariablesGeneratedTests")
-        .addImport("io.kotlintest", "should")
-        .addImport("io.kotlintest.matchers.collections", "containExactly")
+        .addImport("io.kotest.matchers", "should")
+        .addImport("io.kotest.matchers.collections", "containExactly")
         .addImport("reactor.core.publisher", "Flux")
         .addType(
             TypeSpec.classBuilder("PathVariablesGeneratedTests")

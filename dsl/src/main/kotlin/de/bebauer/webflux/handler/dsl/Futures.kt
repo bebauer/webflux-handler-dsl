@@ -6,6 +6,8 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
+private val EMPTY_TIMEOUT_OPTION: Option<Timeout> = None
+
 /**
  * Data class representing a timeout.
  */
@@ -24,8 +26,8 @@ data class Timeout(val value: Long, val unit: TimeUnit) {
 fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
-) =
-    onComplete(future, Option.empty<Timeout>(), init)
+): ResponseCompleteOperation =
+    onComplete(future, EMPTY_TIMEOUT_OPTION, init)
 
 /**
  * Executes the nested block with the optional value from a [CompletableFuture], waiting the specified amount of time.
@@ -52,7 +54,7 @@ fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Timeout,
     init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
-) =
+): ResponseCompleteOperation =
     onComplete(future, timeout.toOption(), init)
 
 /**
@@ -67,7 +69,7 @@ fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Option<Duration>,
     init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
-) =
+): ResponseCompleteOperation =
     onComplete(future, timeout.map { Timeout.of(it) }, init)
 
 /**
@@ -82,14 +84,14 @@ fun <T> HandlerDsl.onComplete(
     future: CompletableFuture<T>,
     timeout: Option<Timeout>,
     init: HandlerDsl.(Either<Throwable, T>) -> CompleteOperation
-) =
+): ResponseCompleteOperation =
     complete(Mono.fromFuture(timeout.map {
         future.orTimeout(
             it.value,
             it.unit
         )
-    }.getOrElse { future }.thenApply<Either<Throwable, T>> { Right(it) })
-        .onErrorResume { Mono.just(Left(it.cause ?: it)) }
+    }.getOrElse { future }.thenApply<Either<Throwable, T>> { Either.Right(it) })
+        .onErrorResume { Mono.just(Either.Left(it.cause ?: it)) }
         .flatMap { value -> execute { init(value) } })
 
 /**
@@ -99,8 +101,10 @@ fun <T> HandlerDsl.onComplete(
  * @param T the type of the [CompletableFuture]s return value
  * @param future the future
  */
-fun <T> HandlerDsl.onSuccess(future: CompletableFuture<T>, init: HandlerDsl.(T) -> CompleteOperation) =
-    onSuccess(future, Option.empty<Timeout>(), init)
+fun <T> HandlerDsl.onSuccess(
+    future: CompletableFuture<T>,
+    init: HandlerDsl.(T) -> CompleteOperation
+): ResponseCompleteOperation = onSuccess(future, EMPTY_TIMEOUT_OPTION, init)
 
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
@@ -115,8 +119,7 @@ fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>,
     timeout: Duration,
     init: HandlerDsl.(T) -> CompleteOperation
-) =
-    onSuccess(future, timeout.toOption(), init)
+): ResponseCompleteOperation = onSuccess(future, timeout.toOption(), init)
 
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
@@ -131,8 +134,7 @@ fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>,
     timeout: Timeout,
     init: HandlerDsl.(T) -> CompleteOperation
-) =
-    onSuccess(future, timeout.toOption(), init)
+): ResponseCompleteOperation = onSuccess(future, timeout.toOption(), init)
 
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
@@ -148,8 +150,7 @@ fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>,
     timeout: Option<Duration>,
     init: HandlerDsl.(T) -> CompleteOperation
-) =
-    onSuccess(future, timeout.map { Timeout.of(it) }, init)
+): ResponseCompleteOperation = onSuccess(future, timeout.map { Timeout.of(it) }, init)
 
 /**
  * Executes the nested block with the value from a [CompletableFuture], if it was successful,
@@ -165,10 +166,9 @@ fun <T> HandlerDsl.onSuccess(
     future: CompletableFuture<T>,
     timeout: Option<Timeout>,
     init: HandlerDsl.(T) -> CompleteOperation
-) =
-    onComplete(future, timeout) { result ->
-        when (result) {
-            is Either.Right -> init(result.b)
-            is Either.Left -> failWith(result.a)
-        }
+): ResponseCompleteOperation = onComplete(future, timeout) { result ->
+    when (result) {
+        is Either.Right -> init(result.value)
+        is Either.Left -> failWith(result.value)
     }
+}

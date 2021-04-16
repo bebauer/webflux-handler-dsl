@@ -1,7 +1,8 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
+
 
 class CookiesTests : WordSpec({
     "cookie" should {
@@ -36,7 +37,8 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "Some([xxx])"
+                    expectStatus().isOk.expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "Option.Some([xxx])"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -49,7 +51,8 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "None"
+                    expectStatus().isOk.expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "Option.None"
                 })
         }
 
@@ -136,7 +139,8 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "Some(xxx)"
+                    expectStatus().isOk.expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "Option.Some(xxx)"
                 },
                 request = { get().uri("/test").cookie("test", "xxx") })
         }
@@ -149,7 +153,8 @@ class CookiesTests : WordSpec({
                     }
                 },
                 {
-                    expectStatus().isOk.expectBody(String::class.java).returnResult().responseBody shouldBe "None"
+                    expectStatus().isOk.expectBody(String::class.java)
+                        .returnResult().responseBody shouldBe "Option.None"
                 })
         }
 

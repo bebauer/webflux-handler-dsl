@@ -2,17 +2,17 @@ package de.bebauer.webflux.handler.dsl
 
 import arrow.core.None
 import arrow.core.Some
-import io.kotlintest.data.forall
-import io.kotlintest.matchers.collections.containExactly
-import io.kotlintest.should
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
-import io.kotlintest.tables.row
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.collections.containExactly
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters.fromObject
+import org.springframework.web.reactive.function.BodyInserters.fromValue
 import org.springframework.web.reactive.function.server.router
-import reactor.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toFlux
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -20,7 +20,9 @@ import java.math.BigInteger
 class QueryParametersTests : WordSpec() {
 
     enum class TestEnum {
+        @Suppress("Unused")
         FIRST,
+
         @Suppress("EnumEntryName")
         second,
         Third
@@ -44,7 +46,7 @@ class QueryParametersTests : WordSpec() {
                     "v10".intParam.repeated.nullable
                 ) { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10 ->
                     ok {
-                        body(fromObject("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8 - $v9 - $v10"))
+                        body(fromValue("$v1 - $v2 - $v3 - $v4 - $v5 - $v6 - $v7 - $v8 - $v9 - $v10"))
                     }
                 }
             })
@@ -65,7 +67,7 @@ class QueryParametersTests : WordSpec() {
                     .expectStatus().isOk
                     .expectBody(String::class.java)
                     .returnResult()
-                    .responseBody shouldBe "a - Some(b) - 3 - Some(4) - c - [1, 2] - Some([3, 4]) - [5, 6] - 7 - [10, 11]"
+                    .responseBody shouldBe "a - Option.Some(b) - 3 - Option.Some(4) - c - [1, 2] - Option.Some([3, 4]) - [5, 6] - 7 - [10, 11]"
             }
 
             "extract the required parameters and those with default values if optional parameters are missing" {
@@ -75,7 +77,7 @@ class QueryParametersTests : WordSpec() {
                     .expectStatus().isOk
                     .expectBody(String::class.java)
                     .returnResult()
-                    .responseBody shouldBe "a - None - 3 - None - default - [1, 2] - None - [9, 8, 7] - null - null"
+                    .responseBody shouldBe "a - Option.None - 3 - Option.None - default - [1, 2] - Option.None - [9, 8, 7] - null - null"
             }
 
             "fail with bad request if required parameters are missing" {
@@ -90,7 +92,7 @@ class QueryParametersTests : WordSpec() {
                     GET("/blah", handler {
                         parameter("test".csvParam) { test ->
                             ok {
-                                contentType(MediaType.APPLICATION_JSON).body(fromObject(test))
+                                contentType(MediaType.APPLICATION_JSON).body(fromValue(test))
                             }
                         }
                     })
@@ -134,49 +136,49 @@ class QueryParametersTests : WordSpec() {
 
         "parameter" should {
             "extract a string query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::stringParam, testMode, "abc")
                 }
             }
 
             "extract a int query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::intParam, testMode, Int.MAX_VALUE)
                 }
             }
 
             "extract a short query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::shortParam, testMode, Short.MAX_VALUE)
                 }
             }
 
             "extract a long query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::longParam, testMode, Long.MAX_VALUE)
                 }
             }
 
             "extract a byte query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::byteParam, testMode, Byte.MAX_VALUE)
                 }
             }
 
             "extract a double query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::doubleParam, testMode, Double.MAX_VALUE)
                 }
             }
 
             "extract a float query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::floatParam, testMode, Float.MAX_VALUE)
                 }
             }
 
             "extract a BigDecimal query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(
                         String::bigDecimalParam,
                         testMode,
@@ -186,7 +188,7 @@ class QueryParametersTests : WordSpec() {
             }
 
             "extract a BigInteger query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(
                         String::bigIntegerParam,
                         testMode,
@@ -196,37 +198,37 @@ class QueryParametersTests : WordSpec() {
             }
 
             "extract a boolean query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::booleanParam, testMode, true)
                 }
             }
 
             "extract a uInt query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::uIntParam, testMode, UInt.MAX_VALUE)
                 }
             }
 
             "extract a uLong query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::uLongParam, testMode, ULong.MAX_VALUE)
                 }
             }
 
             "extract a uByte query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::uByteParam, testMode, UByte.MAX_VALUE)
                 }
             }
 
             "extract a uShort query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter(String::uShortParam, testMode, UShort.MAX_VALUE)
                 }
             }
 
             "extract a enum query parameter" {
-                forall(*TestMode.rows) { testMode ->
+                forAll(*TestMode.rows) { testMode ->
                     testTypedQueryParameter({ this.enumParam() }, testMode, TestEnum.Third)
                 }
             }
@@ -313,7 +315,7 @@ class QueryParametersTests : WordSpec() {
         NULLABLE_REPEATED_MISSING;
 
         companion object {
-            val rows = TestMode.values().map { row(it) }.toTypedArray()
+            val rows = values().map { row(it) }.toTypedArray()
         }
     }
 

@@ -1,10 +1,10 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
 import org.springframework.web.reactive.function.BodyExtractors
-import org.springframework.web.reactive.function.BodyInserters.fromObject
-import reactor.core.publisher.toFlux
+import org.springframework.web.reactive.function.BodyInserters.fromValue
+import reactor.kotlin.core.publisher.toFlux
 
 class BodyTests : WordSpec() {
 
@@ -25,7 +25,7 @@ class BodyTests : WordSpec() {
                             .returnResult().responseBody shouldBe Entity("test")
                     },
                     route = { POST("/test", it) },
-                    request = { post().uri("/test").body(fromObject(Entity("test"))) })
+                    request = { post().uri("/test").body(fromValue(Entity("test"))) })
             }
         }
 
@@ -63,7 +63,7 @@ class BodyTests : WordSpec() {
                             .returnResult().responseBody shouldBe Entity("test")
                     },
                     route = { POST("/test", it) },
-                    request = { post().uri("/test").body(fromObject(Entity("test"))) })
+                    request = { post().uri("/test").body(fromValue(Entity("test"))) })
             }
 
             "extract request body with extractor and hints" {
@@ -79,7 +79,7 @@ class BodyTests : WordSpec() {
                             .returnResult().responseBody shouldBe Entity("test")
                     },
                     route = { POST("/test", it) },
-                    request = { post().uri("/test").body(fromObject(Entity("test"))) })
+                    request = { post().uri("/test").body(fromValue(Entity("test"))) })
             }
         }
     }

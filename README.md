@@ -37,7 +37,9 @@ class Config(private val repository: ItemRepository) {
 
 ```text
 repositories {
-    jcenter()
+    maven {
+        url = uri("https://bebauer.jfrog.io/artifactory/maven-releases")
+    }
 }
 ```
 
@@ -62,9 +64,9 @@ implementation("de.bebauer:webflux-handler-dsl:1.1.0")
   <snapshots>
     <enabled>false</enabled>
   </snapshots>
-  <id>central</id>
-  <name>bintray</name>
-  <url>https://jcenter.bintray.com</url>
+  <id>bebauer</id>
+  <name>bebauer-jfrog</name>
+  <url>https://bebauer.jfrog.io/artifactory/maven-releases</url>
 </repository>
 ```
 

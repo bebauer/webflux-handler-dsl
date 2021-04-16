@@ -49,7 +49,7 @@ router {
         badRequest {
             contentType(MediaType.APPLICATION_JSON)
             header("created-by", "xxx")
-            body(fromObject("The Item"))
+            body(fromValue("The Item"))
         }
     })
 }

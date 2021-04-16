@@ -1,8 +1,9 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
-import reactor.core.publisher.toMono
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
+import reactor.kotlin.core.publisher.toMono
+
 
 class NestedCompleteOperationTests : WordSpec({
     "NestedCompleteOperation" should {

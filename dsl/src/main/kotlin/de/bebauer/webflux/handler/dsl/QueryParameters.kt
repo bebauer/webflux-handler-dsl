@@ -1,10 +1,10 @@
 package de.bebauer.webflux.handler.dsl
 
 import arrow.core.*
-import arrow.fx.IO
-import arrow.fx.handleError
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
+import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * Represents a query parameter.
@@ -33,18 +33,18 @@ fun <T> String.queryParam(converter: (String) -> T): QueryParameter<T, T> =
         converter = converter,
         valueExtractor = {
             when (it) {
-                is Some -> IO { converter(it.t[0]) }
-                    .map(::Right)
-                    .handleError { t ->
-                        Left(
-                            ResponseStatusException(
-                                HttpStatus.BAD_REQUEST,
-                                "Invalid value for query parameter $this. Conversion failed.",
-                                t
-                            )
+                is Some -> try {
+                    Either.Right(converter(it.value[0]))
+                } catch (t: Throwable) {
+                    Either.Left(
+                        ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Invalid value for query parameter $this. Conversion failed.",
+                            t
                         )
-                    }.unsafeRunSync()
-                is None -> Left(
+                    )
+                }
+                is None -> Either.Left(
                     ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Missing required query parameter $this."
@@ -60,17 +60,13 @@ fun <T> String.queryParam(converter: (String) -> T): QueryParameter<T, T> =
  * @param T the type of the parameter
  * @param U type of a single parameter
  */
-val <T, U> QueryParameter<T, U>.optional
-    get(): QueryParameter<Option<T>, U> =
-        QueryParameter(
-            this.name,
-            this.converter,
-            {
-                when (val value = this.valueExtractor(it)) {
-                    is Either.Left -> Right(None)
-                    is Either.Right -> value.map(::Some)
-                }
-            })
+val <T, U> QueryParameter<T, U>.optional: QueryParameter<Option<T>, U>
+    get() = QueryParameter(this.name, this.converter) {
+        when (val value = this.valueExtractor(it)) {
+            is Either.Left -> Either.Right(None)
+            is Either.Right -> value.map(::Some)
+        }
+    }
 
 /**
  * Makes a [QueryParameter] optional.
@@ -80,15 +76,12 @@ val <T, U> QueryParameter<T, U>.optional
  * @param defaultValue the optional default value of the parameter
  */
 fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> =
-    QueryParameter(
-        this.name,
-        this.converter,
-        {
-            when (val value = this.valueExtractor(it)) {
-                is Either.Left -> Right(defaultValue)
-                is Either.Right -> value
-            }
-        })
+    QueryParameter(this.name, this.converter) {
+        when (val value = this.valueExtractor(it)) {
+            is Either.Left -> Either.Right(defaultValue)
+            is Either.Right -> value
+        }
+    }
 
 /**
  * Makes a [QueryParameter] nullable.
@@ -96,120 +89,118 @@ fun <T, U> QueryParameter<T, U>.optional(defaultValue: T): QueryParameter<T, U> 
  * @param T the type of the parameter
  * @param U type of a single parameter
  */
-val <T, U> QueryParameter<T, U>.nullable
-    get(): QueryParameter<T?, U> =
-        QueryParameter(this.name, this.converter, {
-            when (val value = this.valueExtractor(it)) {
-                is Either.Left -> Right(null)
-                is Either.Right -> value
-            }
-        })
+val <T, U> QueryParameter<T, U>.nullable: QueryParameter<T?, U>
+    get() = QueryParameter(this.name, this.converter) {
+        when (val value = this.valueExtractor(it)) {
+            is Either.Left -> Either.Right(null)
+            is Either.Right -> value
+        }
+    }
 
 /**
  * Converts a [QueryParameter] to a repeated parameter. All occurrences of the query parameter will be extracted into a list.
  *
  * @param T the type of the parameter
  */
-val <T> QueryParameter<T, T>.repeated
-    get(): QueryParameter<List<T>, T> =
-        QueryParameter(this.name, this.converter, {
-            when (it) {
-                is Some -> Right(it.t.map(converter))
-                is None -> Left(
-                    ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Missing required query parameter $name."
-                    )
+val <T> QueryParameter<T, T>.repeated: QueryParameter<List<T>, T>
+    get() = QueryParameter(this.name, this.converter) {
+        when (it) {
+            is Some -> Either.Right(it.value.map(converter))
+            is None -> Either.Left(
+                ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Missing required query parameter $name."
                 )
-            }
-        })
+            )
+        }
+    }
 
 /**
  * Creates a [String] extracting [QueryParameter].
  */
-val String.stringParam
+val String.stringParam: QueryParameter<String, String>
     get() = this.queryParam { it }
 
 /**
  * Creates a [Int] extracting [QueryParameter].
  */
-val String.intParam
+val String.intParam: QueryParameter<Int, Int>
     get() = this.queryParam(String::toInt)
 
 /**
  * Creates a [Double] extracting [QueryParameter].
  */
-val String.doubleParam
+val String.doubleParam: QueryParameter<Double, Double>
     get() = this.queryParam(String::toDouble)
 
 /**
  * Creates a [java.math.BigDecimal] extracting [QueryParameter].
  */
-val String.bigDecimalParam
+val String.bigDecimalParam: QueryParameter<BigDecimal, BigDecimal>
     get() = this.queryParam(String::toBigDecimal)
 
 /**
  * Creates a [java.math.BigInteger] extracting [QueryParameter].
  */
-val String.bigIntegerParam
+val String.bigIntegerParam: QueryParameter<BigInteger, BigInteger>
     get() = this.queryParam(String::toBigInteger)
 
 /**
  * Creates a [Boolean] extracting [QueryParameter].
  */
-val String.booleanParam
+val String.booleanParam: QueryParameter<Boolean, Boolean>
     get() = this.queryParam(String::toBoolean)
 
 /**
  * Creates a [Byte] extracting [QueryParameter].
  */
-val String.byteParam
+val String.byteParam: QueryParameter<Byte, Byte>
     get() = this.queryParam(String::toByte)
 
 /**
  * Creates a [Float] extracting [QueryParameter].
  */
-val String.floatParam
+val String.floatParam: QueryParameter<Float, Float>
     get() = this.queryParam(String::toFloat)
 
 /**
  * Creates a [Long] extracting [QueryParameter].
  */
-val String.longParam
+val String.longParam: QueryParameter<Long, Long>
     get() = this.queryParam(String::toLong)
 
 /**
  * Creates a [Short] extracting [QueryParameter].
  */
-val String.shortParam
+val String.shortParam: QueryParameter<Short, Short>
     get() = this.queryParam(String::toShort)
 
 /**
  * Creates a [UByte] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-val String.uByteParam
+val String.uByteParam: QueryParameter<UByte, UByte>
     get() = this.queryParam(String::toUByte)
 
 /**
  * Creates a [UInt] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-val String.uIntParam
+val String.uIntParam: QueryParameter<UInt, UInt>
     get() = this.queryParam(String::toUInt)
 
 /**
  * Creates a [ULong] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-val String.uLongParam
+val String.uLongParam: QueryParameter<ULong, ULong>
     get() = this.queryParam(String::toULong)
 
 /**
  * Creates a [UShort] extracting [QueryParameter].
  */
 @ExperimentalUnsignedTypes
-val String.uShortParam
+val String.uShortParam: QueryParameter<UShort, UShort>
     get() = this.queryParam(String::toUShort)
 
 /**
@@ -225,7 +216,7 @@ fun <T> String.csvParam(converter: (String) -> T): QueryParameter<List<T>, List<
 /**
  * Creates a query parameter that extracts comma separated [String] values.
  */
-val String.csvParam
+val String.csvParam: QueryParameter<List<String>, List<String>>
     get() = this.csvParam { it }
 
 /**
@@ -248,13 +239,13 @@ fun <T, U> QueryParameter<T, T>.map(mapper: (T) -> U): QueryParameter<U, U> =
 /**
  * Maps a string [QueryParameter] value to upper case.
  */
-val QueryParameter<String, String>.toUpperCase
+val QueryParameter<String, String>.toUpperCase: QueryParameter<String, String>
     get() = this.map { it.toUpperCase() }
 
 /**
  * Maps a string [QueryParameter] value to lower case.
  */
-val QueryParameter<String, String>.toLowerCase
+val QueryParameter<String, String>.toLowerCase: QueryParameter<String, String>
     get() = this.map { it.toLowerCase() }
 
 /**
@@ -282,10 +273,10 @@ inline fun <reified T : Enum<T>> QueryParameter<String, String>.toEnum(): QueryP
 fun <T, U> HandlerDsl.parameter(
     parameter: QueryParameter<T, U>,
     init: HandlerDsl.(T) -> CompleteOperation
-) = extractRequest { request ->
+): CompleteOperation = extractRequest { request ->
     when (val values = parameter.valueExtractor(request.queryParams()[parameter.name].toOption())) {
-        is Either.Left -> failWith(values.a)
-        is Either.Right -> init(values.b)
+        is Either.Left -> failWith(values.value)
+        is Either.Right -> init(values.value)
     }
 }
 
@@ -297,4 +288,4 @@ fun <T, U> HandlerDsl.parameter(
 fun <T1, U1> HandlerDsl.parameters(
     parameter1: QueryParameter<T1, U1>,
     init: HandlerDsl.(T1) -> CompleteOperation
-) = this.parameter(parameter1, init)
+): CompleteOperation = this.parameter(parameter1, init)

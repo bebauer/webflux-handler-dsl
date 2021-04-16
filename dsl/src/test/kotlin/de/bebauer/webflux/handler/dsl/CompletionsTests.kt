@@ -1,15 +1,15 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.matchers.collections.containExactly
-import io.kotlintest.should
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.collections.containExactly
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.web.reactive.function.BodyInserters.fromObject
+import org.springframework.web.reactive.function.BodyInserters.fromValue
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 
 class CompletionsTests : WordSpec({
     "complete" should {
@@ -64,7 +64,7 @@ class CompletionsTests : WordSpec({
                     complete(HttpStatus.UNAUTHORIZED) {
                         contentType(MediaType.APPLICATION_JSON)
                         header("xxx", "abc")
-                        body(fromObject("123"))
+                        body(fromValue("123"))
                     }
                 },
                 {
@@ -79,7 +79,7 @@ class CompletionsTests : WordSpec({
         "terminate the handler with the specified status and the response from the specified BodyInserter" {
             runHandlerTest(
                 handler {
-                    complete(HttpStatus.UNAUTHORIZED, fromObject("123"))
+                    complete(HttpStatus.UNAUTHORIZED, fromValue("123"))
                 },
                 {
                     expectStatus().isUnauthorized
@@ -91,7 +91,7 @@ class CompletionsTests : WordSpec({
         "terminate the handler with a nested complete operation" {
             runHandlerTest(
                 handler {
-                    complete(complete(HttpStatus.UNAUTHORIZED, fromObject("123")).toMono())
+                    complete(complete(HttpStatus.UNAUTHORIZED, fromValue("123")).toMono())
                 },
                 {
                     expectStatus().isUnauthorized
@@ -104,7 +104,7 @@ class CompletionsTests : WordSpec({
             runHandlerTest(
                 handler {
                     "123".toMono().map {
-                        complete(HttpStatus.UNAUTHORIZED, fromObject(it))
+                        complete(HttpStatus.UNAUTHORIZED, fromValue(it))
                     }.switchIfEmpty(Mono.defer { notFound().toMono() }).toCompleteOperation()
                 },
                 {

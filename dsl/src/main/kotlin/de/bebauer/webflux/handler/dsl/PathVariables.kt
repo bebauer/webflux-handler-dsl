@@ -1,10 +1,10 @@
 package de.bebauer.webflux.handler.dsl
 
 import arrow.core.*
-import arrow.fx.IO
-import arrow.fx.handleError
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
+import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * Represents a path variable.
@@ -27,27 +27,27 @@ data class PathVariable<T, U>(
  * @param T type of the path variable
  * @param converter converter function that maps a [String] to the type of the path variable
  */
-fun <T> String.pathVariable(converter: (String) -> T): PathVariable<T, T> = PathVariable(this, converter, {
+fun <T> String.pathVariable(converter: (String) -> T): PathVariable<T, T> = PathVariable(this, converter) {
     when (it) {
-        is Some -> IO { converter(it.t) }
-            .map(::Right)
-            .handleError { t ->
-                Left(
-                    ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Invalid value for query parameter $this. Conversion failed.",
-                        t
-                    )
+        is Some -> try {
+            Either.Right(converter(it.value))
+        } catch (t: Throwable) {
+            Either.Left(
+                ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid value for query parameter $this. Conversion failed.",
+                    t
                 )
-            }.unsafeRunSync()
-        is None -> Left(
+            )
+        }
+        is None -> Either.Left(
             ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Missing required query parameter $this."
             )
         )
     }
-})
+}
 
 /**
  * Makes a [PathVariable] optional.
@@ -55,10 +55,10 @@ fun <T> String.pathVariable(converter: (String) -> T): PathVariable<T, T> = Path
  * @param T the type of the path variable
  * @param U type of the actual variable
  */
-val <T, U> PathVariable<T, U>.optional
-    get(): PathVariable<Option<T>, U> = PathVariable(name = this.name, converter = this.converter, valueExtractor = {
+val <T, U> PathVariable<T, U>.optional: PathVariable<Option<T>, U>
+    get() = PathVariable(name = this.name, converter = this.converter, valueExtractor = {
         when (val value = this.valueExtractor(it)) {
-            is Either.Left -> Right(None)
+            is Either.Left -> Either.Right(None)
             is Either.Right -> value.map(::Some)
         }
     })
@@ -71,15 +71,12 @@ val <T, U> PathVariable<T, U>.optional
  * @param defaultValue the optional default value of the path variable
  */
 fun <T, U> PathVariable<T, U>.optional(defaultValue: T): PathVariable<T, U> =
-    PathVariable(
-        this.name,
-        this.converter,
-        {
-            when (val value = this.valueExtractor(it)) {
-                is Either.Left -> Right(defaultValue)
-                is Either.Right -> value
-            }
-        })
+    PathVariable(this.name, this.converter) {
+        when (val value = this.valueExtractor(it)) {
+            is Either.Left -> Either.Right(defaultValue)
+            is Either.Right -> value
+        }
+    }
 
 /**
  * Makes a [PathVariable] nullable.
@@ -87,101 +84,100 @@ fun <T, U> PathVariable<T, U>.optional(defaultValue: T): PathVariable<T, U> =
  * @param T the type of the path variable
  * @param U type of the actual variable
  */
-val <T, U> PathVariable<T, U>.nullable
-    get(): PathVariable<T?, U> =
-        PathVariable(this.name, this.converter, {
-            when (val value = this.valueExtractor(it)) {
-                is Either.Left -> Right(null)
-                is Either.Right -> value
-            }
-        })
+val <T, U> PathVariable<T, U>.nullable: PathVariable<T?, U>
+    get() = PathVariable(this.name, this.converter) {
+        when (val value = this.valueExtractor(it)) {
+            is Either.Left -> Either.Right(null)
+            is Either.Right -> value
+        }
+    }
 
 /**
  * Creates a [String] path variable from a [String].
  */
-val String.stringVar
+val String.stringVar: PathVariable<String, String>
     get() = this.pathVariable { it }
 
 /**
  * Creates a [Int] path variable from a [String].
  */
-val String.intVar
+val String.intVar: PathVariable<Int, Int>
     get() = this.pathVariable(String::toInt)
 
 /**
  * Creates a [Double] path variable from a [String].
  */
-val String.doubleVar
+val String.doubleVar: PathVariable<Double, Double>
     get() = this.pathVariable(String::toDouble)
 
 /**
  * Creates a [java.math.BigDecimal] path variable from a [String].
  */
-val String.bigDecimalVar
+val String.bigDecimalVar: PathVariable<BigDecimal, BigDecimal>
     get() = this.pathVariable(String::toBigDecimal)
 
 /**
  * Creates a [java.math.BigInteger] path variable from a [String].
  */
-val String.bigIntegerVar
+val String.bigIntegerVar: PathVariable<BigInteger, BigInteger>
     get() = this.pathVariable(String::toBigInteger)
 
 /**
  * Creates a [Boolean] path variable from a [String].
  */
-val String.booleanVar
+val String.booleanVar: PathVariable<Boolean, Boolean>
     get() = this.pathVariable(String::toBoolean)
 
 /**
  * Creates a [Byte] path variable from a [String].
  */
-val String.byteVar
+val String.byteVar: PathVariable<Byte, Byte>
     get() = this.pathVariable(String::toByte)
 
 /**
  * Creates a [Float] path variable from a [String].
  */
-val String.floatVar
+val String.floatVar: PathVariable<Float, Float>
     get() = this.pathVariable(String::toFloat)
 
 /**
  * Creates a [Long] path variable from a [String].
  */
-val String.longVar
+val String.longVar: PathVariable<Long, Long>
     get() = this.pathVariable(String::toLong)
 
 /**
  * Creates a [Short] path variable from a [String].
  */
-val String.shortVar
+val String.shortVar: PathVariable<Short, Short>
     get() = this.pathVariable(String::toShort)
 
 /**
  * Creates a [UByte] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-val String.uByteVar
+val String.uByteVar: PathVariable<UByte, UByte>
     get() = this.pathVariable(String::toUByte)
 
 /**
  * Creates a [UInt] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-val String.uIntVar
+val String.uIntVar: PathVariable<UInt, UInt>
     get() = this.pathVariable(String::toUInt)
 
 /**
  * Creates a [ULong] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-val String.uLongVar
+val String.uLongVar: PathVariable<ULong, ULong>
     get() = this.pathVariable(String::toULong)
 
 /**
  * Creates a [UShort] path variable from a [String].
  */
 @ExperimentalUnsignedTypes
-val String.uShortVar
+val String.uShortVar: PathVariable<UShort, UShort>
     get() = this.pathVariable(String::toUShort)
 
 
@@ -205,13 +201,13 @@ fun <T, U> PathVariable<T, T>.map(mapper: (T) -> U): PathVariable<U, U> =
 /**
  * Maps a string [PathVariable] value to upper case.
  */
-val PathVariable<String, String>.toUpperCase
+val PathVariable<String, String>.toUpperCase: PathVariable<String, String>
     get() = this.map { it.toUpperCase() }
 
 /**
  * Maps a string [PathVariable] value to lower case.
  */
-val PathVariable<String, String>.toLowerCase
+val PathVariable<String, String>.toLowerCase: PathVariable<String, String>
     get() = this.map { it.toLowerCase() }
 
 /**
@@ -239,12 +235,12 @@ inline fun <reified T : Enum<T>> PathVariable<String, String>.toEnum(): PathVari
 fun <T, U> HandlerDsl.pathVariable(
     variable: PathVariable<T, U>,
     init: HandlerDsl.(T) -> CompleteOperation
-) = extractRequest { request ->
+): CompleteOperation = extractRequest { request ->
     val variables = request.pathVariables()
 
     when (val value = variable.valueExtractor(variables[variable.name].toOption())) {
-        is Either.Left -> failWith(value.a)
-        is Either.Right -> init(value.b)
+        is Either.Left -> failWith(value.value)
+        is Either.Right -> init(value.value)
     }
 }
 
@@ -256,4 +252,4 @@ fun <T, U> HandlerDsl.pathVariable(
 fun <T1, U1> HandlerDsl.pathVariables(
     variable1: PathVariable<T1, U1>,
     init: HandlerDsl.(T1) -> CompleteOperation
-) = pathVariable(variable1, init)
+): CompleteOperation = pathVariable(variable1, init)

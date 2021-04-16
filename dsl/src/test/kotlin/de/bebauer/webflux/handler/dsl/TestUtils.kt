@@ -14,7 +14,7 @@ fun runHandlerTest(
     request: WebTestClient.() -> WebTestClient.RequestHeadersSpec<*> = { get().uri("/test") }
 ) {
     val router = router {
-        route(de.bebauer.webflux.handler.dsl.handler {
+        route(handler {
             extractRequest { request ->
                 try {
                     complete(handler(request).doOnError { t -> println(t) })
