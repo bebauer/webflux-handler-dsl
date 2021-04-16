@@ -3,6 +3,9 @@ import de.bebauer.webflux.handler.dsl.codegen.codeGenOutputDir
 import de.bebauer.webflux.handler.dsl.codegen.codeGenTestOutputDir
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val bebauerJfrogUser: String? by project
+val bebauerJfrogPassword: String? by project
+
 val jvmTargetVersion: JavaVersion by rootProject.extra
 val kotlinVersion: String by rootProject.extra
 val springVersion: String by rootProject.extra
@@ -14,7 +17,7 @@ val kotlinTestVersion: String by rootProject.extra
 plugins {
     kotlin("jvm")
     kotlin("kapt")
-    id("com.jfrog.bintray")
+    id("com.jfrog.artifactory")
     `maven-publish`
     `project-report`
 }
@@ -66,34 +69,38 @@ val sourcesJar by tasks.registering(Jar::class) {
     from(sourceSets["main"].allSource)
 }
 
-val publicationName = "maven"
-
 publishing {
     publications {
-        register(publicationName, MavenPublication::class) {
-            from(components["java"])
-            artifact(sourcesJar.get())
+        create<MavenPublication>("maven") {
             artifactId = "webflux-handler-dsl"
+
+            from(components["java"])
         }
     }
 }
 
-bintray {
-    user = (project.properties["bintray.user"] ?: System.getenv("BINTRAY_USER"))?.toString()
-    key = (project.properties["bintray.key"] ?: System.getenv("BINTRAY_KEY"))?.toString()
-    setPublications(publicationName)
-    with(pkg) {
-        repo = "maven"
-        name = "webflux-handler-dsl"
-        setLicenses("Apache-2.0")
-        vcsUrl = "https://github.com/bebauer/webflux-handler-dsl"
-        with(version) {
-            name = project.version.toString()
-            desc = "${project.description} ${project.version}"
-            vcsTag = project.version.toString()
+artifactory {
+    setContextUrl("https://bebauer.jfrog.io/artifactory")
+
+    publish(delegateClosureOf<org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig> {
+        Repository().run {
+            if (version.toString().endsWith("-SNAPSHOT")) {
+                setRepoKey("maven-snapshots")
+            } else {
+                setRepoKey("maven-releases")
+            }
+            setUsername(bebauerJfrogUser)
+            setPassword(bebauerJfrogPassword)
+            setMavenCompatible(true)
         }
+
+        defaults(delegateClosureOf<groovy.lang.GroovyObject> {
+            invokeMethod("publications", "maven")
+            setProperty("publishIvy", false)
+        })
+    })
+    // Redefine basic properties of the build info object
+    clientConfig.apply {
+        isIncludeEnvVars = false
     }
-    publish = (project.properties["bintray.publish"] ?: "true").toString().toBoolean()
-    override = (project.properties["bintray.override"] ?: "false").toString().toBoolean()
-    dryRun = (project.properties["bintray.dryrun"] ?: "false").toString().toBoolean()
 }

@@ -2,9 +2,9 @@ plugins {
     base
     kotlin("jvm") version "1.4.32" apply false
     kotlin("plugin.spring") version "1.4.32" apply false
-    id("com.jfrog.bintray") version "1.8.4" apply false
     id("org.springframework.boot") version "2.4.5" apply false
     id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
+    id("com.jfrog.artifactory") version "4.21.0" apply false
     id("pl.allegro.tech.build.axion-release") version "1.13.2"
 }
 
@@ -16,7 +16,7 @@ val jacksonVersion: String by extra("2.12.3")
 val arrowVersion: String by extra("0.13.1")
 val kotlinTestVersion: String by extra("4.4.3")
 
-val jvmTargetVersion: JavaVersion by extra(JavaVersion.VERSION_11)
+val jvmTargetVersion: JavaVersion by extra(JavaVersion.VERSION_14)
 
 scmVersion {
     tag(closureOf<pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig> {

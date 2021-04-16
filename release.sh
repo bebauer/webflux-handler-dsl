@@ -26,5 +26,5 @@ esac
 # make release
 ./gradlew release -Prelease.versionIncrementer=${param}
 
-# upload artifacts to Bintray
-./gradlew bintrayUpload
+# upload artifacts to Artifactory
+./gradlew artifactoryPublish
