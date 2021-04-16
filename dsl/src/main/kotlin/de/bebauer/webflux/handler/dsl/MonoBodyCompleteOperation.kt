@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
  * @param elementClass the class of the body element
  * @param builderInit block for customizing the response
  */
-class MonoBodyCompleteOperation<T>(
+class MonoBodyCompleteOperation<T : Any>(
     val status: HttpStatus,
     val mono: Mono<T>,
     private val elementClass: Class<T>,
@@ -36,7 +36,7 @@ class MonoBodyCompleteOperation<T>(
      * @param U type of the mapping result
      * @param mapper the mapping function
      */
-    inline fun <reified U> map(noinline mapper: (T) -> U) =
+    inline fun <reified U : Any> map(noinline mapper: (T) -> U) =
         MonoBodyCompleteOperation(status, mono.map(mapper), U::class.java, builderInit)
 
     /**

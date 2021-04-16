@@ -1,6 +1,9 @@
 package de.bebauer.webflux.handler.dsl
 
-import arrow.core.*
+import arrow.core.Either
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.toOption
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -27,15 +30,15 @@ data class HeaderName<T, U>(
  * @param T the type of the header value
  * @param converter the value converter function
  */
-fun <T> String.header(converter: (List<String>) -> T) = HeaderName(this, converter) {
+fun <T> String.header(converter: (List<String>) -> T): HeaderName<T, T> = HeaderName(this, converter) {
     when {
-        it.isEmpty() -> Left(
+        it.isEmpty() -> Either.Left(
             ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Missing required header $this."
             )
         )
-        else -> Right(converter(it))
+        else -> Either.Right(converter(it))
     }
 }
 
@@ -48,7 +51,7 @@ fun <T> String.header(converter: (List<String>) -> T) = HeaderName(this, convert
 val <T, U> HeaderName<T, U>.optional: HeaderName<Option<T>, U>
     get() = HeaderName(this.name, this.converter) {
         when (val value = this.valueExtractor(it)) {
-            is Either.Left -> Right(None)
+            is Either.Left -> Either.Right(None)
             is Either.Right -> value.map { v -> v.toOption() }
         }
     }
@@ -62,7 +65,7 @@ val <T, U> HeaderName<T, U>.optional: HeaderName<Option<T>, U>
  */
 fun <T, U> HeaderName<T, U>.optional(defaultValue: T): HeaderName<T, U> = HeaderName(this.name, this.converter) {
     when (val value = this.valueExtractor(it)) {
-        is Either.Left -> Right(defaultValue)
+        is Either.Left -> Either.Right(defaultValue)
         is Either.Right -> value
     }
 }
@@ -76,7 +79,7 @@ fun <T, U> HeaderName<T, U>.optional(defaultValue: T): HeaderName<T, U> = Header
 val <T, U> HeaderName<T, U>.nullable: HeaderName<T?, U>
     get() = HeaderName(this.name, this.converter) {
         when (val value = this.valueExtractor(it)) {
-            is Either.Left -> Right(null)
+            is Either.Left -> Either.Right(null)
             is Either.Right -> value
         }
     }
@@ -117,10 +120,10 @@ val <T, U> HeaderName<out List<T>, out List<U>>.single
 fun <T, U> HandlerDsl.headerValue(
     header: HeaderName<T, U>,
     init: HandlerDsl.(T) -> CompleteOperation
-) = extractRequest { request ->
+): CompleteOperation = extractRequest { request ->
     when (val values = header.valueExtractor(request.headers().header(header.name))) {
-        is Either.Left -> failWith(values.a)
-        is Either.Right -> init(values.b)
+        is Either.Left -> failWith(values.value)
+        is Either.Right -> init(values.value)
     }
 }
 

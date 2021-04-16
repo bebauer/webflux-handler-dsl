@@ -1,7 +1,7 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
 
 class RequestTests : WordSpec({
 

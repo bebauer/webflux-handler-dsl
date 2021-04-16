@@ -15,13 +15,13 @@ import reactor.core.publisher.Mono
  * @param maybeValue the value [Option]
  * @param builderInit block for customizing the response
  */
-class ValueCompleteOperation<T>(
+class ValueCompleteOperation<T : Any>(
     private val status: HttpStatus,
     private val maybeValue: Option<T>,
     private val builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
 ) : ChainableCompleteOperation() {
     override fun buildResponseWithFallback(maybeFallback: Option<() -> Mono<ServerResponse>>): Mono<ServerResponse> =
-        maybeValue.map { ServerResponse.status(status).builderInit().body(BodyInserters.fromObject(it)) }
+        maybeValue.map { ServerResponse.status(status).builderInit().body(BodyInserters.fromValue(it)) }
             .getOrElse {
                 maybeFallback.map { it() }.getOrElse { ServerResponse.status(status).builderInit().build() }
             }
@@ -32,7 +32,7 @@ class ValueCompleteOperation<T>(
      * @param U type of the mapping result
      * @param mapper the mapping function
      */
-    fun <U> map(mapper: (T) -> U): ValueCompleteOperation<U> =
+    fun <U : Any> map(mapper: (T) -> U): ValueCompleteOperation<U> =
         ValueCompleteOperation(status, maybeValue.map(mapper), builderInit)
 
     /**

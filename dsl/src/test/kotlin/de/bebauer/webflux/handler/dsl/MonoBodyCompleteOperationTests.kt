@@ -1,9 +1,9 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 
 class MonoBodyCompleteOperationTests : WordSpec({
     "MonoBodyCompleteOperation" should {

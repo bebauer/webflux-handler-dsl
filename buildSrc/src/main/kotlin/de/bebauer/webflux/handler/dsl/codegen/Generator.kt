@@ -3,7 +3,6 @@ package de.bebauer.webflux.handler.dsl.codegen
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.*
 import java.io.File
 
 const val CODE_GEN_OUTPUT_DIR = "kotlin/generated/dsl"

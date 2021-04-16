@@ -2,10 +2,10 @@ package de.bebauer.webflux.handler.dsl
 
 import arrow.core.None
 import arrow.core.toOption
-import io.kotlintest.data.forall
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
-import io.kotlintest.tables.row
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.shouldBe
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -124,7 +124,7 @@ class HeadersTests : WordSpec() {
             GET("/test", handler {
                 headerValue(header) { value ->
                     ok {
-                        body(BodyInserters.fromObject(value.toString()))
+                        body(BodyInserters.fromValue(value.toString()))
                     }
                 }
             })
@@ -142,7 +142,7 @@ class HeadersTests : WordSpec() {
             }
 
             "support the provided headers" {
-                forall(*headerArguments) { arg ->
+                forAll(*headerArguments) { arg ->
                     val (header, expected, value) = arg
 
                     testHeader(header, listOf(expected).toString(), value)
@@ -155,7 +155,7 @@ class HeadersTests : WordSpec() {
                     GET("/test", handler {
                         headerValue(Headers.Accept.single.optional) { accept ->
                             ok {
-                                body(BodyInserters.fromObject(accept.toString()))
+                                body(BodyInserters.fromValue(accept.toString()))
                             }
                         }
                     })
@@ -171,7 +171,7 @@ class HeadersTests : WordSpec() {
                     GET("/test", handler {
                         headerValue(Headers.AccessControlMaxAge.single.optional) { accept ->
                             ok {
-                                body(BodyInserters.fromObject(accept.toString()))
+                                body(BodyInserters.fromValue(accept.toString()))
                             }
                         }
                     })
@@ -187,7 +187,7 @@ class HeadersTests : WordSpec() {
                     GET("/test", handler {
                         headerValue(Headers.AccessControlMaxAge.single.optional("xxx")) { accept ->
                             ok {
-                                body(BodyInserters.fromObject(accept))
+                                body(BodyInserters.fromValue(accept))
                             }
                         }
                     })
@@ -203,7 +203,7 @@ class HeadersTests : WordSpec() {
                     GET("/test", handler {
                         headerValue(Headers.Accept.single.nullable) { accept ->
                             ok {
-                                body(BodyInserters.fromObject(accept?.toString() ?: "null"))
+                                body(BodyInserters.fromValue(accept?.toString() ?: "null"))
                             }
                         }
                     })
@@ -219,7 +219,7 @@ class HeadersTests : WordSpec() {
                     GET("/test", handler {
                         headerValue(Headers.AccessControlMaxAge.single.nullable) { accept ->
                             ok {
-                                body(BodyInserters.fromObject(accept ?: "null"))
+                                body(BodyInserters.fromValue(accept ?: "null"))
                             }
                         }
                     })
@@ -235,7 +235,7 @@ class HeadersTests : WordSpec() {
                     GET("/test", handler {
                         headerValue(Headers.AccessControlMaxAge.single) { accept ->
                             ok {
-                                body(BodyInserters.fromObject(accept))
+                                body(BodyInserters.fromValue(accept))
                             }
                         }
                     })

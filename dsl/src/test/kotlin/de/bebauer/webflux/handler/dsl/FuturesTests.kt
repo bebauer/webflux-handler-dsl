@@ -3,8 +3,8 @@ package de.bebauer.webflux.handler.dsl
 import arrow.core.Either
 import de.bebauer.webflux.handler.dsl.time.hours
 import de.bebauer.webflux.handler.dsl.time.milliseconds
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -16,8 +16,8 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.completedFuture("test")) { result ->
                         when (result) {
-                            is Either.Right -> ok(result.b)
-                            is Either.Left -> failWith(result.a)
+                            is Either.Right -> ok(result.value)
+                            is Either.Left -> failWith(result.value)
                         }
                     }
                 },
@@ -33,8 +33,8 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.failedFuture<String>(RuntimeException("err"))) { result ->
                         when (result) {
-                            is Either.Right -> ok(result.b)
-                            is Either.Left -> ok(result.a.message)
+                            is Either.Right -> ok(result.value)
+                            is Either.Left -> ok(result.value.message)
                         }
                     }
                 },
@@ -50,8 +50,8 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.completedFuture("test"), 2.hours) { result ->
                         when (result) {
-                            is Either.Right -> ok(result.b)
-                            is Either.Left -> failWith(result.a)
+                            is Either.Right -> ok(result.value)
+                            is Either.Left -> failWith(result.value)
                         }
                     }
                 },
@@ -66,8 +66,8 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.runAsync { Thread.sleep(5000) }, 20.milliseconds) { result ->
                         when (result) {
-                            is Either.Right -> ok(result.b)
-                            is Either.Left -> ok(result.a.toString())
+                            is Either.Right -> ok(result.value)
+                            is Either.Left -> ok(result.value.toString())
                         }
                     }
                 },
@@ -82,8 +82,8 @@ class FuturesTests : WordSpec({
                 handler {
                     onComplete(CompletableFuture.completedFuture("test"), Timeout(10, TimeUnit.SECONDS)) { result ->
                         when (result) {
-                            is Either.Right -> ok(result.b)
-                            is Either.Left -> failWith(result.a)
+                            is Either.Right -> ok(result.value)
+                            is Either.Left -> failWith(result.value)
                         }
                     }
                 },

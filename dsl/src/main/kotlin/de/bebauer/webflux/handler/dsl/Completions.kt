@@ -4,7 +4,7 @@ import arrow.core.toOption
 import org.springframework.http.HttpStatus
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.web.reactive.function.BodyInserter
-import org.springframework.web.reactive.function.BodyInserters.fromObject
+import org.springframework.web.reactive.function.BodyInserters.fromValue
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
@@ -33,7 +33,7 @@ inline fun <reified T> complete(
  * @param mono the [Mono]
  * @param builderInit the builder function
  */
-inline fun <reified T> complete(
+inline fun <reified T : Any> complete(
     status: HttpStatus,
     mono: Mono<T>,
     noinline builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
@@ -47,7 +47,7 @@ inline fun <reified T> complete(
  * handler {
  *  complete(HttpStatus.BAD_REQUEST) {
  *      contentType(MediaType.APPLICATION_JSON)
- *      body(fromObject("test"))
+ *      body(fromValue("test"))
  *  }
  * }
  * ```
@@ -64,10 +64,10 @@ fun complete(
  * response through the builder function.
  *
  * @param status the response status
- * @param value the object that's written to the body using [fromObject]
+ * @param value the object that's written to the body using [fromValue]
  * @param builderInit the builder function
  */
-fun <T> complete(
+fun <T : Any> complete(
     status: HttpStatus,
     value: T?,
     builderInit: ServerResponse.BodyBuilder.() -> ServerResponse.BodyBuilder = { this }
@@ -124,7 +124,7 @@ fun complete(response: Mono<ServerResponse>): ResponseCompleteOperation {
  *
  * @param throwable the exception that caused the failure
  */
-fun failWith(throwable: Throwable): ResponseCompleteOperation = complete(Mono.error<ServerResponse>(throwable))
+fun failWith(throwable: Throwable): ResponseCompleteOperation = complete(Mono.error(throwable))
 
 /**
  *  Fails the handler with an Internal Server Error and the specified message.

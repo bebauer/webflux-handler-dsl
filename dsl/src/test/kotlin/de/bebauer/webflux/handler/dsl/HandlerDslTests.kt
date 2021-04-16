@@ -1,11 +1,11 @@
 package de.bebauer.webflux.handler.dsl
 
-import io.kotlintest.data.forall
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
-import io.kotlintest.tables.row
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.shouldBe
 import org.springframework.http.HttpStatus
-import org.springframework.web.reactive.function.BodyInserters.fromObject
+import org.springframework.web.reactive.function.BodyInserters.fromValue
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
@@ -14,7 +14,7 @@ class HandlerDslTests : WordSpec({
 
     "handler DSL" should {
         "allow completions inside if - else" {
-            forall(row("a"), row("b")) { value ->
+            forAll(row("a"), row("b")) { value ->
                 runHandlerTest(
                     handler {
                         if (value == "a") ok("a") else ok("b")
@@ -34,7 +34,7 @@ class HandlerDslTests : WordSpec({
                         ok("Test")
                     }
 
-                    complete(result.flatMap { ServerResponse.from(it).body(fromObject("Yay!")) })
+                    complete(result.flatMap { ServerResponse.from(it).body(fromValue("Yay!")) })
                 },
                 {
                     expectStatus().isOk
@@ -50,7 +50,7 @@ class HandlerDslTests : WordSpec({
                         failWith("Test")
                     }
 
-                    complete(result.onErrorResume { ServerResponse.ok().body(fromObject("Nay!")) })
+                    complete(result.onErrorResume { ServerResponse.ok().body(fromValue("Nay!")) })
                 },
                 {
                     expectStatus().isOk

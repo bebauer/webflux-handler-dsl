@@ -1,25 +1,59 @@
 plugins {
     base
-    kotlin("jvm") version "1.3.31" apply false
+    kotlin("jvm") version "1.4.32" apply false
+    kotlin("plugin.spring") version "1.4.32" apply false
+    id("com.jfrog.bintray") version "1.8.4" apply false
+    id("org.springframework.boot") version "2.4.5" apply false
+    id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
+    id("pl.allegro.tech.build.axion-release") version "1.13.2"
+}
+
+val kotlinVersion: String by extra("1.4.32")
+val springVersion: String by extra("5.3.6")
+val reactorKotlinVersion: String by extra("1.1.3")
+val springBootVersion: String by extra("2.4.4")
+val jacksonVersion: String by extra("2.12.3")
+val arrowVersion: String by extra("0.13.1")
+val kotlinTestVersion: String by extra("4.4.3")
+
+val jvmTargetVersion: JavaVersion by extra(JavaVersion.VERSION_11)
+
+scmVersion {
+    tag(closureOf<pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig> {
+        prefix = "release-"
+    })
+
+    versionIncrementer = pl.allegro.tech.build.axion.release.domain.PredefinedVersionIncrementer.versionIncrementerFor("incrementMinor")
+
+    hooks(closureOf<pl.allegro.tech.build.axion.release.domain.hooks.HooksConfig> {
+        pre(
+            "fileUpdate",
+            mapOf(
+                "files" to listOf(
+                    "README.md",
+                    "docs/gettingStarted/gradle.md",
+                    "docs/gettingStarted/maven.md"
+                ),
+                "pattern" to KotlinClosure2<String, pl.allegro.tech.build.axion.release.domain.hooks.HookContext, String>(
+                    { v, _ -> v.replace(".", "\\.") }),
+                "replacement" to KotlinClosure2<String, pl.allegro.tech.build.axion.release.domain.hooks.HookContext, String>(
+                    { v, _ -> v })
+            )
+        )
+        pre("commit")
+    })
 }
 
 allprojects {
+    version = rootProject.scmVersion.version
     group = "de.bebauer"
 
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
 subprojects {
-    val kotlinVersion by extra("1.3.31")
-    val springVersion by extra("5.1.7.RELEASE")
-    val springBootVersion by extra("2.1.5.RELEASE")
-    val jacksonVersion by extra("2.9.9")
-    val jUnitPlatformConsoleVersion by extra("1.4.2")
-    val arrowVersion by extra("0.10.3")
-    val kotlinTestVersion by extra("3.3.2")
-
     tasks.withType<Jar> {
         archiveBaseName.set("webflux-handler-${project.name}")
     }

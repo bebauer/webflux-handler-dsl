@@ -1,15 +1,15 @@
 package de.bebauer.webflux.handler.dsl.time
 
-import io.kotlintest.data.forall
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.StringSpec
-import io.kotlintest.tables.row
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.shouldBe
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 class DurationTests : StringSpec({
     "test duration creation" {
-        forall(
+        forAll(
             row(1.day, Duration.ofDays(1)),
             row(10.days, Duration.ofDays(10)),
             row(1.hour, Duration.ofHours(1)),
