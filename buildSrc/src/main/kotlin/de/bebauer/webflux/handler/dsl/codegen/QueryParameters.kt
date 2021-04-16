@@ -34,8 +34,8 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
                 "init",
                 LambdaTypeName.get(
                     receiver = handlerDsl,
-                    parameters = *(1..i).map { TypeVariableName("T$it") }.toTypedArray(),
-                    returnType = completeOperation
+                    returnType = completeOperation,
+                    parameters = (1..i).map { TypeVariableName("T$it") }.toTypedArray(),
                 )
             )
             .returns(completeOperation)
@@ -55,22 +55,23 @@ internal fun generateParameterDsl(outputDir: File, testOutDir: File) {
 
         fileBuilder.addFunction(functionBuilder.build())
 
-        tests.add("""
+        tests.add(
+            """
             |"extract $i values" {
             |   runHandlerTest(
             |       handler {
-            |          parameters(${(1..i).map { "\"p$it\".intParam" }.joinToString()}) { ${
-            (1..i).map { "p$it" }.joinToString()
-        } ->
-            |              ok(Flux.fromIterable(listOf(${(1..i).map { "p$it" }.joinToString()})))
+            |          parameters(${(1..i).joinToString { "\"p$it\".intParam" }}) { ${
+                (1..i).joinToString { "p$it" }
+            } ->
+            |              ok(Flux.fromIterable(listOf(${(1..i).joinToString { "p$it" }})))
             |          }
             |       },
             |       {
             |           expectStatus().isOk
             |               .expectBodyList(Int::class.java)
-            |               .returnResult().responseBody should containExactly(${(1..i).map { "$it" }.joinToString()})
+            |               .returnResult().responseBody should containExactly(${(1..i).joinToString { "$it" }})
             |       },
-            |       request = { get().uri("/test?${(1..i).map { "p$it=$it" }.joinToString("&")}") })
+            |       request = { get().uri("/test?${(1..i).joinToString("&") { "p$it=$it" }}") })
             |
             |}
             """.trimMargin()
