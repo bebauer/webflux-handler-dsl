@@ -27,4 +27,4 @@ esac
 ./gradlew release -Prelease.versionIncrementer=${param}
 
 # upload artifacts to Artifactory
-./gradlew artifactoryPublish
+./gradlew publish

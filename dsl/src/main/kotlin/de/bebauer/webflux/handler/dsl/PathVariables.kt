@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.*
 
 /**
  * Represents a path variable.
@@ -202,13 +203,13 @@ fun <T, U> PathVariable<T, T>.map(mapper: (T) -> U): PathVariable<U, U> =
  * Maps a string [PathVariable] value to upper case.
  */
 val PathVariable<String, String>.toUpperCase: PathVariable<String, String>
-    get() = this.map { it.toUpperCase() }
+    get() = this.map { it.uppercase(Locale.getDefault()) }
 
 /**
  * Maps a string [PathVariable] value to lower case.
  */
 val PathVariable<String, String>.toLowerCase: PathVariable<String, String>
-    get() = this.map { it.toLowerCase() }
+    get() = this.map { it.lowercase(Locale.getDefault()) }
 
 /**
  *  Maps a string [PathVariable] value to an enum.

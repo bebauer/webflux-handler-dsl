@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.*
 
 /**
  * Represents a query parameter.
@@ -240,13 +241,13 @@ fun <T, U> QueryParameter<T, T>.map(mapper: (T) -> U): QueryParameter<U, U> =
  * Maps a string [QueryParameter] value to upper case.
  */
 val QueryParameter<String, String>.toUpperCase: QueryParameter<String, String>
-    get() = this.map { it.toUpperCase() }
+    get() = this.map { it.uppercase(Locale.getDefault()) }
 
 /**
  * Maps a string [QueryParameter] value to lower case.
  */
 val QueryParameter<String, String>.toLowerCase: QueryParameter<String, String>
-    get() = this.map { it.toLowerCase() }
+    get() = this.map { it.lowercase(Locale.getDefault()) }
 
 /**
  *  Maps a string [QueryParameter] value to an enum.

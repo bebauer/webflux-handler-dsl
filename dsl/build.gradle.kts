@@ -3,21 +3,11 @@ import de.bebauer.webflux.handler.dsl.codegen.codeGenOutputDir
 import de.bebauer.webflux.handler.dsl.codegen.codeGenTestOutputDir
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val bebauerJfrogUser: String? by project
-val bebauerJfrogPassword: String? by project
-
 val jvmTargetVersion: JavaVersion by rootProject.extra
-val kotlinVersion: String by rootProject.extra
-val springVersion: String by rootProject.extra
-val reactorKotlinVersion: String by rootProject.extra
-val jacksonVersion: String by rootProject.extra
-val arrowVersion: String by rootProject.extra
-val kotlinTestVersion: String by rootProject.extra
 
 plugins {
     kotlin("jvm")
     kotlin("kapt")
-    id("com.jfrog.artifactory")
     `maven-publish`
     `project-report`
 }
@@ -25,21 +15,19 @@ plugins {
 java.sourceCompatibility = jvmTargetVersion
 
 dependencies {
-    implementation(platform("io.arrow-kt:arrow-stack:$arrowVersion"))
-
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.springframework:spring-webflux:$springVersion")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:$reactorKotlinVersion")
-    implementation("io.arrow-kt:arrow-core")
-    implementation("io.arrow-kt:arrow-fx-coroutines:$arrowVersion")
+    implementation(libs.spring.webflux)
+    implementation(libs.reactor.kotlin.extensions)
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
 
-    testImplementation("org.springframework:spring-test:$springVersion")
-    testImplementation("org.springframework:spring-context:$springVersion")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion") {
+    testImplementation(libs.spring.test)
+    testImplementation(libs.spring.context)
+    testImplementation(libs.jackson.module.kotlin) {
         exclude(module = "kotlin-reflect")
     }
-    testImplementation("io.kotest:kotest-runner-junit5:$kotlinTestVersion")
-    testImplementation("io.kotest:kotest-assertions-core:$kotlinTestVersion")
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.assertions.core)
 }
 
 sourceSets["main"].java {
@@ -52,6 +40,17 @@ sourceSets["test"].java {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+
+    testLogging {
+        showExceptions = true
+        showStandardStreams = true
+        events = setOf(
+            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+        )
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }
 
 val codeGen by tasks.registering(CodeGen::class)
@@ -70,37 +69,21 @@ val sourcesJar by tasks.registering(Jar::class) {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/bebauer/webflux-handler-dsl")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GPR_TOKEN")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             artifactId = "webflux-handler-dsl"
 
             from(components["java"])
         }
-    }
-}
-
-artifactory {
-    setContextUrl("https://bebauer.jfrog.io/artifactory")
-
-    publish(delegateClosureOf<org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig> {
-        Repository().run {
-            if (version.toString().endsWith("-SNAPSHOT")) {
-                setRepoKey("maven-snapshots")
-            } else {
-                setRepoKey("maven-releases")
-            }
-            setUsername(bebauerJfrogUser)
-            setPassword(bebauerJfrogPassword)
-            setMavenCompatible(true)
-        }
-
-        defaults(delegateClosureOf<groovy.lang.GroovyObject> {
-            invokeMethod("publications", "maven")
-            setProperty("publishIvy", false)
-        })
-    })
-    // Redefine basic properties of the build info object
-    clientConfig.apply {
-        isIncludeEnvVars = false
     }
 }
