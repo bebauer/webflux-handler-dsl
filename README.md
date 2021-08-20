@@ -37,7 +37,11 @@ class Config(private val repository: ItemRepository) {
 ```text
 repositories {
     maven {
-        url = uri("https://bebauer.jfrog.io/artifactory/maven-releases")
+        url = uri("https://maven.pkg.github.com/bebauer/webflux-handler-dsl")
+        credentials {
+            username = "github username"
+            password = "github personal access token with read:packages scope"
+        }
     }
 }
 ```
