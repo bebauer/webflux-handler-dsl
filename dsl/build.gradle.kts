@@ -10,9 +10,14 @@ plugins {
     kotlin("kapt")
     `maven-publish`
     `project-report`
+    `java-library`
 }
 
-java.sourceCompatibility = jvmTargetVersion
+java {
+    withSourcesJar()
+
+    sourceCompatibility = jvmTargetVersion
+}
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -60,12 +65,6 @@ tasks.withType<KotlinCompile> {
 
     kotlinOptions.jvmTarget = jvmTargetVersion.toString()
     kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
-}
-
-val sourcesJar by tasks.registering(Jar::class) {
-    dependsOn(JavaPlugin.CLASSES_TASK_NAME, codeGen)
-    archiveClassifier.set("sources")
-    from(sourceSets["main"].allSource)
 }
 
 publishing {
